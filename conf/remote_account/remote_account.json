@@ -1,0 +1,26 @@
+{
+    "hdu": {
+        "accounts": [
+            {
+                "username": "LLLLLL0420",
+                "password": "pai3.1415926535"
+            },
+            {
+                "username": "hdu_user_2",
+                "password": "hdu_pw_2"
+            }
+        ]
+    },
+    "hnust": {
+        "accounts": [
+            {
+                "username": "hnust_user_1",
+                "password": "hnust_pw_1"
+            },
+            {
+                "username": "hnust_user_2",
+                "password": "hnust_pw_2"
+            }
+        ]
+    }
+}
