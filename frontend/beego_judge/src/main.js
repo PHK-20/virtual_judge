@@ -8,6 +8,7 @@ import 'element-ui/lib/theme-chalk/index.css';
 import axios from 'axios'
 
 Vue.config.productionTip = false
+axios.defaults.baseURL="http://localhost:9000/"
 Vue.prototype.$axios = axios
 Vue.use(ElementUI)
 /* eslint-disable no-new */

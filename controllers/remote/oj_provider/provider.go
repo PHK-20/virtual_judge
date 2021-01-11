@@ -2,7 +2,7 @@ package oj_provider
 
 type Provider interface {
 	Login() error
-	Submit(problemid int, language string, usercode string) error
+	Submit(problemid string, language string, usercode string) error
 }
 
 type f struct {

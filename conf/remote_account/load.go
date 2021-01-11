@@ -14,28 +14,18 @@ const config_path = "/home/phkli/go_project/beego_judge/conf/remote_account/remo
 
 var config *Config
 
+func init() {
+	ReadConfig()
+}
 func GetConfig() *Config {
 	return config
 }
 
-func ReadConfig() error {
+func ReadConfig() {
 	// parse remote_account.json
-	if config != nil {
-		return nil
-	}
-	file_ptr, err := os.Open(config_path)
+	file_ptr, _ := os.Open(config_path)
 	defer file_ptr.Close()
-	if err != nil {
-		return err
-	}
-	data, err := ioutil.ReadAll(file_ptr)
-	if err != nil {
-		return err
-	}
+	data, _ := ioutil.ReadAll(file_ptr)
 	config = new(Config)
-	err = json.Unmarshal(data, &config.Account)
-	if err != nil {
-		return err
-	}
-	return nil
+	_ = json.Unmarshal(data, &config.Account)
 }

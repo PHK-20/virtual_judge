@@ -1,7 +1,7 @@
 <template>
   <div class="submit">
     <el-input v-model="problemid" placeholder="problemid"></el-input>
-    <el-select v-model="languge" placeholder="请选择语言">
+    <el-select v-model="language" placeholder="请选择语言">
       <el-option
         v-for="item in options"
         :key="item.value"
@@ -15,7 +15,7 @@
       type="textarea"
       :autosize="{ minRows: 10 }"
       placeholder="请输入内容"
-      v-model="code"
+      v-model="usercode"
     >
     </el-input>
   </div>
@@ -27,36 +27,37 @@ export default {
   data() {
     return {
       problemid: "",
-      code: "",
+      usercode: "",
       options: [
         {
-          value: 0,
+          value: "G++",
           label: "G++",
         },
         {
-          value: 1,
+          value: "GCC",
           label: "GCC",
         },
         {
-          value: 2,
-          label: "python",
+          value: "C++",
+          label: "C++",
         },
       ],
-      languge: 0,
+      language: "G++",
     };
   },
   methods: {
     submit: function () {
-      this.code = "";
       this.$axios({
         method: "post",
         url: "/submit",
         data: {
           problemid: this.problemid,
-          code: this.code,
-          languge: this.languge,
+          usercode: this.usercode,
+          language: this.language,
         },
       });
+      console.log(this.usercode);
+      this.usercode = "";
     },
   },
 };
