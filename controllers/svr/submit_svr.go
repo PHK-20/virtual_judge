@@ -1,7 +1,6 @@
 package svr
 
 import (
-	"beego_judge/conf/remote_account"
 	"beego_judge/controllers/remote/oj"
 	"encoding/json"
 	"sync/atomic"
@@ -14,6 +13,7 @@ type SubmitController struct {
 }
 
 type reqSubmit struct {
+	Oj        string
 	Usercode  string
 	Language  string
 	Problemid string
@@ -48,13 +48,12 @@ func (c *SubmitController) Post() {
 		resp.Msg = "submit code at least 50 characters"
 		return
 	}
-	oj := oj.OjManager["hdu"]
-	err = oj.Submit(req.Problemid, req.Language, req.Usercode)
+	oj := oj.OjManager[req.Oj]
+	remote_run_id, err := oj.Submit(req.Problemid, req.Language, req.Usercode)
 	if err != nil {
 		resp.Msg = err.Error()
 		return
 	}
-	remote_run_id, err := oj.GetRemoteRunId(req.Problemid, remote_account.GetConfig().Account.Hdu.Accounts[0].Username)
 	if err != nil {
 		resp.Msg = err.Error()
 	} else {

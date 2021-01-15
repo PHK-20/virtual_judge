@@ -11,7 +11,8 @@ type QueryController struct {
 	beego.Controller
 }
 type reqQuery struct {
-	RunId int32
+	RunId int
+	Oj string
 }
 
 type respQuery struct {
@@ -34,7 +35,7 @@ func (c *QueryController) Post() {
 		resp.Msg = "wrong request parmas"
 		return
 	}
-	result, err := oj.OjManager["hdu"].QueryResult(35086405)
+	result, err := oj.OjManager[req.Oj].QueryResult(req.RunId)
 	if err != nil {
 		resp.Msg = err.Error()
 		return
