@@ -2,7 +2,9 @@ package svr
 
 import (
 	"beego_judge/controllers/remote/oj"
+	"beego_judge/models"
 	"encoding/json"
+	"fmt"
 	"sync/atomic"
 
 	"github.com/astaxie/beego"
@@ -13,23 +15,24 @@ type SubmitController struct {
 }
 
 type reqSubmit struct {
+	Username  string
 	Oj        string
-	Usercode  string
-	Language  string
 	Problemid string
+	Language  string
+	Usercode  string
 }
 
 type respSubmit struct {
-	Status      string
-	Msg         string
-	RemoteRunId int
-	RunId       int32
+	Status string
+	Msg    string
+	RunId  int
 }
 
-var runid int32
+var max_run_id *int32
 
 func init() {
-	runid = 0
+	max_run_id, _ = models.GetMaxRunId()
+	fmt.Println(*max_run_id)
 }
 
 func (c *SubmitController) Post() {
@@ -49,18 +52,19 @@ func (c *SubmitController) Post() {
 		return
 	}
 	oj := oj.OjManager[req.Oj]
-	remote_run_id, err := oj.Submit(req.Problemid, req.Language, req.Usercode)
+	html, err := oj.Submit(req.Problemid, req.Language, req.Usercode)
 	if err != nil {
 		resp.Msg = err.Error()
 		return
 	}
-	if err != nil {
-		resp.Msg = err.Error()
-	} else {
-		resp.Status = "success"
-		resp.RemoteRunId = *remote_run_id
-		resp.RunId = atomic.AddInt32(&runid, 1)
-	}
+	runid := int(atomic.AddInt32(max_run_id, 1))
+
+	go func() {
+		oj.GetRemoteRunId(html)
+	}()
+
+	resp.Status = "success"
+	resp.RunId = runid
 }
 
 func (c *SubmitController) Options() {

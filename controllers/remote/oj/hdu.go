@@ -4,6 +4,7 @@ import (
 	"beego_judge/conf/remote_account"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -66,7 +67,7 @@ func (oj *HDU) Login() (*http.Cookie, error) {
 	return resp.Cookies()[0], nil
 }
 
-func (oj *HDU) Submit(pid string, language string, usercode string) (*int, error) {
+func (oj *HDU) Submit(pid string, language string, usercode string) (*string, error) {
 	// login and get cookie
 	url_val := make(url.Values)
 	url_val.Add("_usercode", base64.RawStdEncoding.EncodeToString([]byte(url.QueryEscape(usercode))))
@@ -75,39 +76,36 @@ func (oj *HDU) Submit(pid string, language string, usercode string) (*int, error
 
 	req, err := http.NewRequest(http.MethodPost, oj.SubmitUrl, strings.NewReader(url_val.Encode()))
 	if err != nil {
-		return nil, err
+		return nil,err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.AddCookie(hdu.WebCookie)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil,err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil,err
 	}
 	if strings.Contains(string(body), "No such problem") {
-		return nil, errors.New("No such problem")
+		return nil,errors.New("No such problem")
 	}
 	if strings.Contains(string(body), "action=login") {
 		oj.WebCookie, err = oj.Login()
 		if err != nil {
-			return nil, errors.New("relogin fail")
+			return nil,errors.New("relogin fail")
 		}
 		return oj.Submit(pid, language, usercode)
 	}
-	remote_run_id, err := oj.GetRemoteRunId(string(body))
-	if err != nil {
-		return nil, err
-	}
-	return remote_run_id, nil
+	html := string(body)
+	return &html, nil
 }
 
-func (oj *HDU) GetRemoteRunId(html string) (*int, error) {
-	remote_run_id, err := strconv.Atoi(regexp.MustCompile("(<td height=22px>)\\d+").FindString(html)[16:])
+func (oj *HDU) GetRemoteRunId(html *string) (*int, error) {
+	remote_run_id, err := strconv.Atoi(regexp.MustCompile("(<td height=22px>)\\d+").FindString(*html)[16:])
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +113,7 @@ func (oj *HDU) GetRemoteRunId(html string) (*int, error) {
 }
 
 func (oj *HDU) QueryResult(remote_run_id int) (*string, error) {
-	url_str := oj.StatusUrl + "?first=" + strconv.Itoa(remote_run_id)
+	url_str := fmt.Sprintf("%s?first=%d", oj.StatusUrl, remote_run_id)
 	req, err := http.NewRequest(http.MethodGet, url_str, nil)
 	if err != nil {
 		return nil, err
@@ -130,7 +128,7 @@ func (oj *HDU) QueryResult(remote_run_id int) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	reg_str := ">" + strconv.Itoa(remote_run_id) + "[\\s\\S]*?font.+?>.+?<"
+	reg_str := fmt.Sprintf(">%d[\\s\\S]*?font.+?>.+?<", remote_run_id)
 	str := regexp.MustCompile(reg_str).FindString(string(body))
 	result := str[strings.LastIndex(str, ">")+1 : len(str)-1]
 	return &result, nil
