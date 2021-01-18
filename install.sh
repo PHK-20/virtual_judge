@@ -12,7 +12,8 @@ mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
 
 raw_sql="
     CREATE TABLE submit_status (
-        runid INT  PRIMARY KEY,
+        runid INT NOT NULL,
+        remote_runid INT NOT NULL,
         username VARCHAR(20) NOT NULL,
         oj VARCHAR(20) NOT NULL,
         problemid VARCHAR(10) NOT NULL,
@@ -21,14 +22,15 @@ raw_sql="
         memory INT,
         language VARCHAR(10) NOT NULL,
         length INT NOT NULL,
-        submit_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        submit_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (runid)
     );
 "
 mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
 
 raw_sql="
     INSERT INTO submit_status 
-    (runid,username,oj,problemid,result,language,length) 
-    values (1,'LLLLLL0420','HUD','1000','Pending','G++',100);
+    (runid,remote_runid,username,oj,problemid,result,language,length) 
+    values (1,1,'LLLLLL0420','HUD','1000','Pending','G++',100);
 "
 mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"

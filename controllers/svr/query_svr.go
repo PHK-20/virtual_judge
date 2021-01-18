@@ -12,7 +12,7 @@ type QueryController struct {
 }
 type reqQuery struct {
 	RunId int
-	Oj string
+	Oj    string
 }
 
 type respQuery struct {
@@ -35,7 +35,7 @@ func (c *QueryController) Post() {
 		resp.Msg = "wrong request parmas"
 		return
 	}
-	result, err := oj.OjManager[req.Oj].QueryResult(req.RunId)
+	result, err := oj.OjManager[req.Oj].QueryResult(&req.RunId)
 	if err != nil {
 		resp.Msg = err.Error()
 		return

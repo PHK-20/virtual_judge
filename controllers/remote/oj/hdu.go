@@ -67,36 +67,36 @@ func (oj *HDU) Login() (*http.Cookie, error) {
 	return resp.Cookies()[0], nil
 }
 
-func (oj *HDU) Submit(pid string, language string, usercode string) (*string, error) {
+func (oj *HDU) Submit(pid, language, usercode *string) (*string, error) {
 	// login and get cookie
 	url_val := make(url.Values)
-	url_val.Add("_usercode", base64.RawStdEncoding.EncodeToString([]byte(url.QueryEscape(usercode))))
-	url_val.Add("problemid", pid)
-	url_val.Add("language", strconv.Itoa(oj.Language[language]))
+	url_val.Add("_usercode", base64.RawStdEncoding.EncodeToString([]byte(url.QueryEscape(*usercode))))
+	url_val.Add("problemid", *pid)
+	url_val.Add("language", strconv.Itoa(oj.Language[*language]))
 
 	req, err := http.NewRequest(http.MethodPost, oj.SubmitUrl, strings.NewReader(url_val.Encode()))
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.AddCookie(hdu.WebCookie)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	if strings.Contains(string(body), "No such problem") {
-		return nil,errors.New("No such problem")
+		return nil, errors.New("No such problem")
 	}
 	if strings.Contains(string(body), "action=login") {
 		oj.WebCookie, err = oj.Login()
 		if err != nil {
-			return nil,errors.New("relogin fail")
+			return nil, errors.New("relogin fail")
 		}
 		return oj.Submit(pid, language, usercode)
 	}
@@ -112,7 +112,7 @@ func (oj *HDU) GetRemoteRunId(html *string) (*int, error) {
 	return &remote_run_id, nil
 }
 
-func (oj *HDU) QueryResult(remote_run_id int) (*string, error) {
+func (oj *HDU) QueryResult(remote_run_id *int) (*string, error) {
 	url_str := fmt.Sprintf("%s?first=%d", oj.StatusUrl, remote_run_id)
 	req, err := http.NewRequest(http.MethodGet, url_str, nil)
 	if err != nil {

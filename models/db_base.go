@@ -14,7 +14,7 @@ func init() {
 	db_host := beego.AppConfig.String("mysql_host")
 	db_name := beego.AppConfig.String("mysql_dbname")
 
-	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", db_user, db_pw, db_host, db_name))
+	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", db_user, db_pw, db_host, db_name))
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
