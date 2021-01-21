@@ -1,18 +1,16 @@
 <!-- 展示模板 -->
 <template>
   <div id="app">
-    <submit></submit>
+    <router-view></router-view>
   </div>
 </template>
  
 <script>
 // 导入组件
-import submit from "./components/submit";
 
 export default {
   name: "app",
   components: {
-    submit,
   },
 };
 </script>

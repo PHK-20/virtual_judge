@@ -18,6 +18,7 @@ func init() {
 		c.ResponseWriter.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept,Accept-Encoding") //header的类型
 	}
 	beego.InsertFilter("/submit", beego.BeforeRouter, allow_access)
+	beego.InsertFilter("/problem", beego.BeforeRouter, allow_access)
 
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/submit", &judge.SubmitController{})

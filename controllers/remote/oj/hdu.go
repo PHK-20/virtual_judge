@@ -185,6 +185,5 @@ func (oj *HDU) ShowProblem(problemid *string) (*ProblemInfo, error) {
 	reg_str = fmt.Sprintf("Memory Limit: [\\s\\S]*?\\)")
 	str = regexp.MustCompile(reg_str).FindString(string(body))
 	info.MemoryLimit = str[strings.LastIndex(str, ":")+2:]
-	fmt.Println(info.SampleInput)
 	return &info, nil
 }

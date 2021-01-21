@@ -25,14 +25,18 @@ type DataProblem struct {
 }
 
 func (c *GetProblemController) Get() {
-	resp := &respProblem{
+	resp := respProblem{
 		Status: "fail",
 	}
 	defer func() {
 		c.Data["json"] = &resp
 		c.ServeJSON()
 	}()
-	problemid := c.GetString("problemid", "none")
+	problemid := c.GetString("problemid", "")
+	if problemid == "" {
+		resp.ErrorMsg = "wrong problemid"
+		return
+	}
 	oj_name := c.GetString("oj", "HDU")
 	oj, ok := oj.OjManager[oj_name]
 	if !ok {
@@ -46,4 +50,9 @@ func (c *GetProblemController) Get() {
 		return
 	}
 	resp.Status = "success"
+}
+
+func (c *GetProblemController) Options() {
+	c.Data["json"] = map[string]interface{}{"status": 200, "message": "ok", "moreinfo": ""}
+	c.ServeJSON()
 }

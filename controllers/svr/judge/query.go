@@ -24,7 +24,7 @@ type DataQuery struct {
 }
 
 func (c *QueryController) Get() {
-	resp := &respQuery{
+	resp := respQuery{
 		Status: "fail",
 	}
 	defer func() {
