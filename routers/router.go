@@ -2,7 +2,8 @@ package routers
 
 import (
 	"beego_judge/controllers"
-	"beego_judge/controllers/svr"
+	"beego_judge/controllers/svr/judge"
+	"beego_judge/controllers/svr/problem"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
@@ -19,6 +20,7 @@ func init() {
 	beego.InsertFilter("/submit", beego.BeforeRouter, allow_access)
 
 	beego.Router("/", &controllers.MainController{})
-	beego.Router("/submit", &svr.SubmitController{})
-	beego.Router("/queryResult", &svr.QueryController{})
+	beego.Router("/submit", &judge.SubmitController{})
+	beego.Router("/queryResult", &judge.QueryController{})
+	beego.Router("/problem", &problem.GetProblemController{})
 }

@@ -11,10 +11,14 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
+	_ "github.com/PuerkitoBio/goquery"
 )
 
 type HDU struct {
-	OjBaseInfo //base_info
+	OjBaseInfo    //base_info
+	WaitingResult []string
 }
 
 var hdu *HDU
@@ -22,10 +26,11 @@ var hdu *HDU
 func init() {
 	hdu = &HDU{
 		OjBaseInfo{
-			Name:      "HDU",
-			LoginUrl:  "http://acm.hdu.edu.cn/userloginex.php?action=login",
-			SubmitUrl: "http://acm.hdu.edu.cn/submit.php?action=submit",
-			StatusUrl: "http://acm.hdu.edu.cn/status.php",
+			Name:       "HDU",
+			LoginUrl:   "http://acm.hdu.edu.cn/userloginex.php?action=login",
+			SubmitUrl:  "http://acm.hdu.edu.cn/submit.php?action=submit",
+			StatusUrl:  "http://acm.hdu.edu.cn/status.php",
+			ProblemUrl: "http://acm.hdu.edu.cn/showproblem.php",
 			Language: map[string]int{
 				"G++":    0,
 				"GCC":    1,
@@ -36,6 +41,7 @@ func init() {
 				"C#":     6,
 			},
 		},
+		[]string{"Queuing", "Compiling", "Running "},
 	}
 	hdu.WebCookie, _ = hdu.Login()
 	OjManager[hdu.Name] = hdu
@@ -72,7 +78,11 @@ func (oj *HDU) Submit(pid, language, usercode *string) (*string, error) {
 	url_val := make(url.Values)
 	url_val.Add("_usercode", base64.RawStdEncoding.EncodeToString([]byte(url.QueryEscape(*usercode))))
 	url_val.Add("problemid", *pid)
-	url_val.Add("language", strconv.Itoa(oj.Language[*language]))
+	language_int, ok := oj.Language[*language]
+	if !ok {
+		return nil, errors.New("wrong language")
+	}
+	url_val.Add("language", strconv.Itoa(language_int))
 
 	req, err := http.NewRequest(http.MethodPost, oj.SubmitUrl, strings.NewReader(url_val.Encode()))
 	if err != nil {
@@ -113,7 +123,7 @@ func (oj *HDU) GetRemoteRunId(html *string) (*int, error) {
 }
 
 func (oj *HDU) QueryResult(remote_run_id *int) (*string, error) {
-	url_str := fmt.Sprintf("%s?first=%d", oj.StatusUrl, remote_run_id)
+	url_str := fmt.Sprintf("%s?first=%d", oj.StatusUrl, *remote_run_id)
 	req, err := http.NewRequest(http.MethodGet, url_str, nil)
 	if err != nil {
 		return nil, err
@@ -128,9 +138,53 @@ func (oj *HDU) QueryResult(remote_run_id *int) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	reg_str := fmt.Sprintf(">%d[\\s\\S]*?font.+?>.+?<", remote_run_id)
+	reg_str := fmt.Sprintf(">%d[\\s\\S]*?font.+?>.+?<", *remote_run_id)
 	str := regexp.MustCompile(reg_str).FindString(string(body))
 	result := str[strings.LastIndex(str, ">")+1 : len(str)-1]
 	return &result, nil
 
+}
+
+func (oj *HDU) IsFinalResult(result *string) bool {
+	for _, val := range oj.WaitingResult {
+		if *result == val {
+			return false
+		}
+	}
+	return true
+}
+
+func (oj *HDU) ShowProblem(problemid *string) (*ProblemInfo, error) {
+	resp, err := http.Get(fmt.Sprintf("%s?pid=%s", oj.ProblemUrl, *problemid))
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
+	if err != nil {
+		return nil, err
+	}
+	var info ProblemInfo
+	info.Title = doc.Find("h1").Text()
+	tmp_str := []string{}
+	doc.Find("div.panel_content").Each(func(idx int, s *goquery.Selection) {
+		tmp_str = append(tmp_str, s.Text())
+	})
+	info.Description = tmp_str[0]
+	info.Input = tmp_str[1]
+	info.Output = tmp_str[2]
+	info.SampleInput = tmp_str[3]
+	info.SampleOutput = tmp_str[4]
+	reg_str := fmt.Sprintf("Time Limit: [\\s\\S]*?\\)")
+	str := regexp.MustCompile(reg_str).FindString(string(body))
+	info.TimeLimit = str[strings.LastIndex(str, ":"):]
+	reg_str = fmt.Sprintf("Memory Limit: [\\s\\S]*?\\)")
+	str = regexp.MustCompile(reg_str).FindString(string(body))
+	info.MemoryLimit = str[strings.LastIndex(str, ":")+2:]
+	fmt.Println(info.SampleInput)
+	return &info, nil
 }

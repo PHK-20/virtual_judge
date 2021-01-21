@@ -31,6 +31,6 @@ mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
 raw_sql="
     INSERT INTO submit_status 
     (runid,remote_runid,username,oj,problemid,result,language,length) 
-    values (1,1,'LLLLLL0420','HUD','1000','Pending','G++',100);
+    values (1,1,'LLLLLL0420','HUD','1000','Submited','G++',100);
 "
 mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"

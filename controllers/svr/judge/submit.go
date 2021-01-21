@@ -1,4 +1,4 @@
-package svr
+package judge
 
 import (
 	"beego_judge/controllers/remote/oj"
@@ -23,9 +23,13 @@ type reqSubmit struct {
 }
 
 type respSubmit struct {
-	Status string
-	Msg    string
-	RunId  int
+	Status   string
+	ErrorMsg string
+	data     DataSubmit
+}
+
+type DataSubmit struct {
+	runid int
 }
 
 var max_run_id *int32
@@ -44,35 +48,38 @@ func (c *SubmitController) Post() {
 	req := reqSubmit{}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)
 	if err != nil {
-		resp.Msg = "wrong request parmas"
+		resp.ErrorMsg = "wrong request parmas"
+		return
+	}
+	if req.Username == "" {
+		resp.ErrorMsg = "username is empty"
 		return
 	}
 	fmt.Println(req)
 	if len(req.Usercode) < 50 {
-		resp.Msg = "submit code at least 50 characters"
+		resp.ErrorMsg = "submit code at least 50 characters"
 		return
 	}
 	oj, ok := oj.OjManager[req.Oj]
 	if !ok {
-		resp.Msg = "wrong oj"
+		resp.ErrorMsg = "wrong oj"
 		return
 	}
 	html, err := oj.Submit(&req.Problemid, &req.Language, &req.Usercode)
 	if err != nil {
-		resp.Msg = err.Error()
+		resp.ErrorMsg = err.Error()
 		return
 	}
 	runid := int(atomic.AddInt32(max_run_id, 1))
 	go func() {
 		remote_runid, _ := oj.GetRemoteRunId(html)
-		var result string
 		item := models.Submit_status{
 			RunId:        runid,
 			RemoteRunId:  *remote_runid,
 			Username:     req.Username,
 			Oj:           req.Oj,
 			ProblemId:    req.Problemid,
-			Result:       result,
+			Result:       "submited",
 			Execute_Time: 0,
 			Memory:       0,
 			Language:     req.Language,
@@ -81,11 +88,12 @@ func (c *SubmitController) Post() {
 		err = item.AddItem()
 		if err != nil {
 			fmt.Println(err.Error())
+			return
 		}
 	}()
 
 	resp.Status = "success"
-	resp.RunId = runid
+	resp.data.runid = runid
 }
 
 func (c *SubmitController) Options() {

@@ -5,12 +5,13 @@ import (
 )
 
 type OjBaseInfo struct {
-	Name      string
-	LoginUrl  string
-	SubmitUrl string
-	StatusUrl string
-	Language  map[string]int
-	WebCookie *http.Cookie
+	Name       string
+	LoginUrl   string
+	SubmitUrl  string
+	StatusUrl  string
+	ProblemUrl string
+	Language   map[string]int
+	WebCookie  *http.Cookie
 }
 
 type OjInterface interface {
@@ -18,6 +19,19 @@ type OjInterface interface {
 	Submit(pid, language, usercode *string) (*string, error)
 	GetRemoteRunId(html *string) (*int, error)
 	QueryResult(remote_run_id *int) (*string, error)
+	IsFinalResult(result *string) bool
+	ShowProblem(problemid *string) (*ProblemInfo, error)
+}
+
+type ProblemInfo struct {
+	Title       string
+	Description string
+	Input       string
+	Output      string
+	SampleInput string
+	SampleOutput   string
+	TimeLimit   string
+	MemoryLimit string
 }
 
 var OjManager = make(map[string]OjInterface)
