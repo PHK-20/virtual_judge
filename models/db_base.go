@@ -20,7 +20,7 @@ func init() {
 	} else {
 		fmt.Println("db connect success")
 	}
-	orm.Debug = true
+	orm.Debug = false
 }
 func GetMaxRunId() (*int32, error) {
 	var runid int32

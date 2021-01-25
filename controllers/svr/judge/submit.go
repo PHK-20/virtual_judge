@@ -25,11 +25,11 @@ type reqSubmit struct {
 type respSubmit struct {
 	Status   string
 	ErrorMsg string
-	data     DataSubmit
+	Data     DataSubmit
 }
 
 type DataSubmit struct {
-	runid int
+	Runid int
 }
 
 var max_run_id *int32
@@ -72,7 +72,11 @@ func (c *SubmitController) Post() {
 	}
 	runid := int(atomic.AddInt32(max_run_id, 1))
 	go func() {
-		remote_runid, _ := oj.GetRemoteRunId(html)
+		remote_runid, err := oj.GetRemoteRunId(html)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 		item := models.Submit_status{
 			RunId:        runid,
 			RemoteRunId:  *remote_runid,
@@ -93,7 +97,7 @@ func (c *SubmitController) Post() {
 	}()
 
 	resp.Status = "success"
-	resp.data.runid = runid
+	resp.Data.Runid = runid
 }
 
 func (c *SubmitController) Options() {

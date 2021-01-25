@@ -16,11 +16,12 @@ type reqQuery struct {
 type respQuery struct {
 	Status   string
 	ErrorMsg string
-	data     DataQuery
+	Data     DataQuery
 }
 
 type DataQuery struct {
-	Result string
+	Result        string
+	IsFinalResult bool
 }
 
 func (c *QueryController) Get() {
@@ -40,11 +41,17 @@ func (c *QueryController) Get() {
 	}
 
 	item := models.Submit_status{}
-	result, err := item.QueryResult(&req.RunId)
+	isFinalRes, result, err := item.QueryResult(&req.RunId)
 	if err != nil {
 		resp.ErrorMsg = err.Error()
 		return
 	}
-	resp.data.Result = *result
+	resp.Data.Result = *result
 	resp.Status = "success"
+	resp.Data.IsFinalResult = isFinalRes
+}
+
+func (c *QueryController) Options() {
+	c.Data["json"] = map[string]interface{}{"status": 200, "message": "ok", "moreinfo": ""}
+	c.ServeJSON()
 }

@@ -20,18 +20,20 @@ type OjInterface interface {
 	GetRemoteRunId(html *string) (*int, error)
 	QueryResult(remote_run_id *int) (*string, error)
 	IsFinalResult(result *string) bool
-	ShowProblem(problemid *string) (*ProblemInfo, error)
+	GetProblem(problemid *string) (*ProblemInfo, error)
+	GetLanguage() *map[string]int
 }
 
 type ProblemInfo struct {
-	Title       string
-	Description string
-	Input       string
-	Output      string
-	SampleInput string
-	SampleOutput   string
-	TimeLimit   string
-	MemoryLimit string
+	Title        string
+	Description  string
+	Input        string
+	Output       string
+	SampleInput  string
+	SampleOutput string
+	TimeLimit    string
+	MemoryLimit  string
+	Hint         string
 }
 
 var OjManager = make(map[string]OjInterface)

@@ -10,8 +10,9 @@ type GetProblemController struct {
 	beego.Controller
 }
 type reqProblem struct {
-	Problemid string
-	Oj        string
+	Problemid    string
+	Oj           string
+	NeedLanguage bool
 }
 
 type respProblem struct {
@@ -22,6 +23,7 @@ type respProblem struct {
 
 type DataProblem struct {
 	ProblemInfo *oj.ProblemInfo
+	Language    []string
 }
 
 func (c *GetProblemController) Get() {
@@ -34,7 +36,7 @@ func (c *GetProblemController) Get() {
 	}()
 	problemid := c.GetString("problemid", "")
 	if problemid == "" {
-		resp.ErrorMsg = "wrong problemid"
+		resp.ErrorMsg = "problemid empty"
 		return
 	}
 	oj_name := c.GetString("oj", "HDU")
@@ -44,7 +46,17 @@ func (c *GetProblemController) Get() {
 		return
 	}
 	var err error
-	resp.Data.ProblemInfo, err = oj.ShowProblem(&problemid)
+	need_language, err := c.GetBool("needLanguage", true)
+	if err != nil {
+		resp.ErrorMsg = err.Error()
+		return
+	}
+	if need_language {
+		for k := range *oj.GetLanguage() {
+			resp.Data.Language = append(resp.Data.Language, k)
+		}
+	}
+	resp.Data.ProblemInfo, err = oj.GetProblem(&problemid)
 	if err != nil {
 		resp.ErrorMsg = err.Error()
 		return

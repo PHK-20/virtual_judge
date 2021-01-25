@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	_ "github.com/PuerkitoBio/goquery"
+	"github.com/axgle/mahonia"
 )
 
 type HDU struct {
@@ -41,7 +41,7 @@ func init() {
 				"C#":     6,
 			},
 		},
-		[]string{"Queuing", "Compiling", "Running "},
+		[]string{"Queuing", "Compiling", "Running"},
 	}
 	hdu.WebCookie, _ = hdu.Login()
 	OjManager[hdu.Name] = hdu
@@ -154,19 +154,30 @@ func (oj *HDU) IsFinalResult(result *string) bool {
 	return true
 }
 
-func (oj *HDU) ShowProblem(problemid *string) (*ProblemInfo, error) {
-	resp, err := http.Get(fmt.Sprintf("%s?pid=%s", oj.ProblemUrl, *problemid))
+func (oj *HDU) GetProblem(problemid *string) (*ProblemInfo, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s?pid=%s", oj.ProblemUrl, *problemid), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
+	html_utf8 := mahonia.NewDecoder("gbk").ConvertString(string(body))
 	if err != nil {
 		return nil, err
 	}
 
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html_utf8))
 	if err != nil {
 		return nil, err
+	}
+	if strings.Contains(html_utf8, "Invalid Parameter.") {
+		return nil, errors.New("wrong problemid")
+	}
+	if strings.Contains(html_utf8, "No such problem") {
+		return nil, errors.New("No such problem")
 	}
 	var info ProblemInfo
 	info.Title = doc.Find("h1").Text()
@@ -174,16 +185,27 @@ func (oj *HDU) ShowProblem(problemid *string) (*ProblemInfo, error) {
 	doc.Find("div.panel_content").Each(func(idx int, s *goquery.Selection) {
 		tmp_str = append(tmp_str, s.Text())
 	})
+	if len(tmp_str) < 5 {
+		return nil, errors.New("get problem fail")
+	}
 	info.Description = tmp_str[0]
 	info.Input = tmp_str[1]
 	info.Output = tmp_str[2]
 	info.SampleInput = tmp_str[3]
 	info.SampleOutput = tmp_str[4]
-	reg_str := fmt.Sprintf("Time Limit: [\\s\\S]*?\\)")
-	str := regexp.MustCompile(reg_str).FindString(string(body))
+	if strings.Contains(info.SampleOutput, "Hint") {
+		info.Hint = info.SampleOutput[strings.LastIndex(info.SampleOutput, "Hint")+4:]
+		info.SampleOutput = info.SampleOutput[:strings.LastIndex(info.SampleOutput, "Hint")]
+	}
+	reg_str := "Time Limit: [\\s\\S]*?\\)"
+	str := regexp.MustCompile(reg_str).FindString(html_utf8)
 	info.TimeLimit = str[strings.LastIndex(str, ":"):]
-	reg_str = fmt.Sprintf("Memory Limit: [\\s\\S]*?\\)")
-	str = regexp.MustCompile(reg_str).FindString(string(body))
+	reg_str = "Memory Limit: [\\s\\S]*?\\)"
+	str = regexp.MustCompile(reg_str).FindString(html_utf8)
 	info.MemoryLimit = str[strings.LastIndex(str, ":")+2:]
 	return &info, nil
+}
+
+func (oj *HDU) GetLanguage() *map[string]int {
+	return &oj.Language
 }

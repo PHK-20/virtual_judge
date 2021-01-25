@@ -20,7 +20,7 @@ type Submit_status struct {
 	Memory       int       `orm:"column(memory)"`
 	Language     string    `orm:"column(language)"`
 	Length       int       `orm:"column(length)"`
-	SubmitTime  time.Time `orm:"column(submit_time)"`
+	SubmitTime   time.Time `orm:"column(submit_time)"`
 }
 
 func init() {
@@ -41,6 +41,7 @@ func (table *Submit_status) AddItem() error {
 }
 
 func (table *Submit_status) SetResult(runid *int, result *string) error {
+	fmt.Printf("db set result,runid:%v result:%v", *runid, *result)
 	db := orm.NewOrm()
 	item := Submit_status{}
 	item.RunId = *runid
@@ -49,26 +50,29 @@ func (table *Submit_status) SetResult(runid *int, result *string) error {
 	if err != nil || num != 1 {
 		return err
 	}
-	fmt.Printf("runid:%v result:%s\n", *runid, *result)
 	return nil
 }
 
-func (table *Submit_status) QueryResult(runid *int) (*string, error) {
+func (table *Submit_status) QueryResult(runid *int) (bool, *string, error) {
+	is_final_res := true
 	db := orm.NewOrm()
 	table.RunId = *runid
 	err := db.Read(table)
 	if err != nil {
-		return nil, errors.New("db submit_status QueryResult fail , wrong runid")
+		return false, nil, errors.New("db submit_status QueryResult fail , wrong runid")
 	}
 	result := &table.Result
 	oj := oj.OjManager[table.Oj]
 	if !oj.IsFinalResult(result) || *result == "submited" {
-		fmt.Println(oj.IsFinalResult(result))
 		result, err = oj.QueryResult(&table.RemoteRunId)
+		if !oj.IsFinalResult(result) {
+			is_final_res = false
+		}
 		if err != nil {
-			return nil, err
+			return is_final_res, nil, err
 		}
 		go table.SetResult(&table.RunId, result)
 	}
-	return result, nil
+
+	return is_final_res, result, nil
 }

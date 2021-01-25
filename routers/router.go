@@ -19,6 +19,7 @@ func init() {
 	}
 	beego.InsertFilter("/submit", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/problem", beego.BeforeRouter, allow_access)
+	beego.InsertFilter("/queryResult", beego.BeforeRouter, allow_access)
 
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/submit", &judge.SubmitController{})
