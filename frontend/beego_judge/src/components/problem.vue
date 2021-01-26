@@ -1,90 +1,79 @@
 <template>
   <div class="problem">
     <el-row>
-      <el-col :span="20" :offset="2">
-        <el-tabs v-model="activeTab" type="card">
-          <el-tab-pane label="问题" name="problemTab">
-            <el-row :gutter="3">
-              <el-col :span="4">
-                <el-input
-                  v-model="problemid"
-                  placeholder="problemid"
-                ></el-input>
-              </el-col>
-              <el-col :span="4">
-                <el-select
-                  v-model="oj"
-                  placeholder="oj"
-                  @change="needLanguage = true"
-                >
-                  <el-option
-                    v-for="item in oj_array"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  >
-                  </el-option>
-                </el-select>
-              </el-col>
-              <el-col :span="3">
-                <el-button type="primary" @click="queryProblem"
-                  >Query</el-button
-                >
-              </el-col>
-            </el-row>
-            <h1>{{ title }}</h1>
-            <div class="desc">Description</div>
-            <el-card class="box-card">
-              <p class="content">{{ description }}</p>
-            </el-card>
-            <div class="desc">Input</div>
-            <el-card class="box-card">
-              <p class="content">{{ input }}</p>
-            </el-card>
-            <div class="desc">Output</div>
-            <el-card class="box-card">
-              <p class="content">{{ output }}</p>
-            </el-card>
-            <div class="desc">Sample Input</div>
-            <el-card class="box-card">
-              <p class="content">{{ sampleInput }}</p>
-            </el-card>
-            <div class="desc">Sample Output</div>
-            <el-card class="box-card">
-              <p class="content">{{ sampleOutput }}</p>
-            </el-card>
-            <div class="desc">Hint</div>
-            <el-card class="box-card">
-              <p class="content">{{ hint }}</p>
-            </el-card>
-          </el-tab-pane>
-          <el-tab-pane label="提交" name="submitTab">
-            <el-row :gutter="3">
-              <el-col :span="4">
-                <el-select v-model="language" placeholder="language">
-                  <el-option
-                    v-for="item in lang_array"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  >
-                  </el-option>
-                </el-select>
-              </el-col>
-              <el-col :span="3">
-                <el-button type="primary" @click="submit">Submit</el-button>
-              </el-col>
-            </el-row>
-            <el-input
-              type="textarea"
-              :autosize="{ minRows: 20 }"
-              placeholder="code"
-              v-model="usercode"
-              style="margin-top: 20px"
+      <el-col :span="20">
+        <el-row :gutter="3">
+          <el-col :span="4">
+            <el-input v-model="problemid" placeholder="problemid"></el-input>
+          </el-col>
+          <el-col :span="4">
+            <el-select
+              v-model="oj"
+              placeholder="oj"
+              @change="needLanguage = true"
             >
-            </el-input>
-          </el-tab-pane>
-        </el-tabs>
+              <el-option
+                v-for="item in oj_array"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </el-col>
+          <el-col :span="3">
+            <el-button type="primary" @click="queryProblem">Query</el-button>
+          </el-col>
+        </el-row>
+        <h1>{{ title }}</h1>
+        <div class="desc">Description</div>
+        <el-card class="box-card">
+          <p class="content">{{ description }}</p>
+        </el-card>
+        <div class="desc">Input</div>
+        <el-card class="box-card">
+          <p class="content">{{ input }}</p>
+        </el-card>
+        <div class="desc">Output</div>
+        <el-card class="box-card">
+          <p class="content">{{ output }}</p>
+        </el-card>
+        <div class="desc">Sample Input</div>
+        <el-card class="box-card">
+          <p class="content">{{ sampleInput }}</p>
+        </el-card>
+        <div class="desc">Sample Output</div>
+        <el-card class="box-card">
+          <p class="content">{{ sampleOutput }}</p>
+        </el-card>
+        <div class="desc" v-if="hint">Hint</div>
+        <el-card class="box-card" v-if="hint">
+          <p class="content">{{ hint }}</p>
+        </el-card>
+        <el-row :gutter="3" style="margin-top: 30px">
+          <el-col :span="4">
+            <el-select v-model="language" placeholder="language">
+              <el-option
+                v-for="item in lang_array"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </el-col>
+          <el-col :span="3">
+            <el-button type="primary" @click="submit">Submit</el-button>
+          </el-col>
+        </el-row>
+        <el-input
+          type="textarea"
+          :autosize="{ minRows: 20 }"
+          placeholder="code"
+          v-model="usercode"
+          style="margin-top: 20px"
+        >
+        </el-input>
       </el-col>
     </el-row>
   </div>
@@ -115,18 +104,13 @@ export default {
       lang_array: [],
       language: "",
       usercode: "",
-      activeTab: "submitTab",
       needLanguage: true,
       username: "LLLLLL0420",
       notifications: {},
     };
   },
-  mounted: function () {
-    this.queryProblem();
-  },
   methods: {
     queryProblem: function () {
-      console.log(this.needLanguage);
       if (this.problemid == "") {
         this.$notify.error({
           title: "Error",
@@ -143,7 +127,6 @@ export default {
           },
         })
         .then((resp) => {
-          console.log(resp);
           if (resp.data.Status == "success") {
             let info = {};
             info = resp.data.Data.ProblemInfo;
@@ -159,6 +142,7 @@ export default {
               resp.data.Data.Language.forEach((v) => {
                 this.lang_array.push({ value: v });
               });
+              this.language = this.lang_array[0].value;
               this.needLanguage = false;
             }
           } else {
@@ -169,7 +153,7 @@ export default {
           }
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
         });
     },
     submit: function () {
@@ -184,7 +168,6 @@ export default {
           oj: this.oj,
         },
       }).then((resp) => {
-        console.log(resp);
         if (resp.data.Status == "fail") {
           this.$notify.error({
             title: "Error",
@@ -205,6 +188,7 @@ export default {
       });
     },
     queryResult: function (runid) {
+      console.log(runid + " query");
       this.$axios
         .get("/queryResult", {
           params: {
@@ -213,13 +197,15 @@ export default {
         })
         .then((resp) => {
           if (resp.data.Status == "success") {
-            console.log(resp.data);
             let result = resp.data.Data.Result;
             if (result != this.notifications[runid].status) {
-              if (result == "Accepted") {
-                this.notifications[runid].type = "success";
-              } else if (resp.data.Data.IsFinalResult == true) {
-                this.notifications[runid].type = "error";
+              if (resp.data.Data.IsFinalResult == true) {
+                console.log(runid + " query finish");
+                if (result == "Accepted") {
+                  this.notifications[runid].type = "success";
+                } else {
+                  this.notifications[runid].type = "error";
+                }
               }
               this.notifications[runid].status = result;
               this.notifications[runid].message = this.notifyMsg(runid, result);
@@ -227,7 +213,7 @@ export default {
             if (!resp.data.Data.IsFinalResult) {
               setTimeout(() => {
                 this.queryResult(runid);
-              }, 1000);
+              }, 3000);
             }
           } else {
             this.$notify.error({
@@ -237,6 +223,8 @@ export default {
           }
         })
         .catch((err) => {
+          this.notifications[runid].message = "Request Server Error";
+          this.notifications[runid].type = "error";
           console.error(err);
         });
     },

@@ -32,13 +32,14 @@ func init() {
 			StatusUrl:  "http://acm.hdu.edu.cn/status.php",
 			ProblemUrl: "http://acm.hdu.edu.cn/showproblem.php",
 			Language: map[string]int{
-				"G++":    0,
-				"GCC":    1,
-				"C++":    2,
-				"C":      3,
-				"Pascal": 4,
-				"Java":   5,
-				"C#":     6,
+				"ALL":    0,
+				"G++":    1,
+				"GCC":    2,
+				"C++":    3,
+				"C":      4,
+				"Pascal": 5,
+				"Java":   6,
+				"C#":     7,
 			},
 		},
 		[]string{"Queuing", "Compiling", "Running"},
@@ -73,49 +74,57 @@ func (oj *HDU) Login() (*http.Cookie, error) {
 	return resp.Cookies()[0], nil
 }
 
-func (oj *HDU) Submit(pid, language, usercode *string) (*string, error) {
+func (oj *HDU) Submit(pid, language, usercode *string) error {
 	// login and get cookie
 	url_val := make(url.Values)
 	url_val.Add("_usercode", base64.RawStdEncoding.EncodeToString([]byte(url.QueryEscape(*usercode))))
 	url_val.Add("problemid", *pid)
 	language_int, ok := oj.Language[*language]
 	if !ok {
-		return nil, errors.New("wrong language")
+		return errors.New("wrong language")
 	}
 	url_val.Add("language", strconv.Itoa(language_int))
 
 	req, err := http.NewRequest(http.MethodPost, oj.SubmitUrl, strings.NewReader(url_val.Encode()))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.AddCookie(hdu.WebCookie)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if strings.Contains(string(body), "No such problem") {
-		return nil, errors.New("No such problem")
+		return errors.New("No such problem")
 	}
 	if strings.Contains(string(body), "action=login") {
 		oj.WebCookie, err = oj.Login()
 		if err != nil {
-			return nil, errors.New("relogin fail")
+			return errors.New("relogin fail")
 		}
 		return oj.Submit(pid, language, usercode)
 	}
-	html := string(body)
-	return &html, nil
+	return nil
 }
 
-func (oj *HDU) GetRemoteRunId(html *string) (*int, error) {
-	remote_run_id, err := strconv.Atoi(regexp.MustCompile("(<td height=22px>)\\d+").FindString(*html)[16:])
+func (oj *HDU) GetRemoteRunId(pid, lang *string) (*int, error) {
+	username := remote_account.GetConfig().Account.Hdu.Accounts[0].Username
+	resp, err := http.Get(fmt.Sprintf("%v?pid=%v&user=%v&lang=%v", oj.StatusUrl, *pid, username, oj.Language[*lang]))
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	remote_run_id, err := strconv.Atoi(regexp.MustCompile("(<td height=22px>)\\d+").FindString(string(body))[16:])
 	if err != nil {
 		return nil, err
 	}

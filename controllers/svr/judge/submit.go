@@ -48,50 +48,56 @@ func (c *SubmitController) Post() {
 	req := reqSubmit{}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)
 	if err != nil {
-		resp.ErrorMsg = "wrong request parmas"
+		resp.ErrorMsg = "Wrong request parmas"
 		return
 	}
 	if req.Username == "" {
-		resp.ErrorMsg = "username is empty"
+		resp.ErrorMsg = "Username is empty"
 		return
 	}
-	fmt.Println(req)
 	if len(req.Usercode) < 50 {
-		resp.ErrorMsg = "submit code at least 50 characters"
+		resp.ErrorMsg = "Submit code at least 50 characters"
 		return
 	}
 	oj, ok := oj.OjManager[req.Oj]
 	if !ok {
-		resp.ErrorMsg = "wrong oj"
+		resp.ErrorMsg = "Wrong oj"
 		return
 	}
-	html, err := oj.Submit(&req.Problemid, &req.Language, &req.Usercode)
+	err = oj.Submit(&req.Problemid, &req.Language, &req.Usercode)
 	if err != nil {
+		fmt.Println(err.Error())
 		resp.ErrorMsg = err.Error()
 		return
 	}
 	runid := int(atomic.AddInt32(max_run_id, 1))
+	item := models.Submit_status{
+		RunId:        runid,
+		Username:     req.Username,
+		Oj:           req.Oj,
+		ProblemId:    req.Problemid,
+		Result:       "submiting",
+		Execute_Time: 0,
+		Memory:       0,
+		Language:     req.Language,
+		Length:       len(req.Usercode),
+	}
+	item.AddItem()
 	go func() {
-		remote_runid, err := oj.GetRemoteRunId(html)
+		remote_runid, err := oj.GetRemoteRunId(&req.Problemid, &req.Language)
+		fmt.Printf("runid: %d -> remote_runid: %d\n", runid, *remote_runid)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Printf("get remote_runid fail, runid: %v error: %v\n", runid, err.Error())
 			return
 		}
 		item := models.Submit_status{
-			RunId:        runid,
-			RemoteRunId:  *remote_runid,
-			Username:     req.Username,
-			Oj:           req.Oj,
-			ProblemId:    req.Problemid,
-			Result:       "submited",
-			Execute_Time: 0,
-			Memory:       0,
-			Language:     req.Language,
-			Length:       len(req.Usercode),
+			RunId:       runid,
+			RemoteRunId: *remote_runid,
+			Result:      "submited",
 		}
-		err = item.AddItem()
+		_, err = item.Update("RunId", "RemoteRunId", "Result")
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Printf("db: submit_status update fail, runid: %v error: %v", runid, err.Error())
 			return
 		}
 	}()

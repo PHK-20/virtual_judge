@@ -42,7 +42,7 @@ func (c *GetProblemController) Get() {
 	oj_name := c.GetString("oj", "HDU")
 	oj, ok := oj.OjManager[oj_name]
 	if !ok {
-		resp.ErrorMsg = "wrong oj"
+		resp.ErrorMsg = "Wrong oj"
 		return
 	}
 	var err error

@@ -16,8 +16,8 @@ type OjBaseInfo struct {
 
 type OjInterface interface {
 	Login() (*http.Cookie, error)
-	Submit(pid, language, usercode *string) (*string, error)
-	GetRemoteRunId(html *string) (*int, error)
+	Submit(pid, language, usercode *string) error
+	GetRemoteRunId(pid, language *string) (*int, error)
 	QueryResult(remote_run_id *int) (*string, error)
 	IsFinalResult(result *string) bool
 	GetProblem(problemid *string) (*ProblemInfo, error)

@@ -2,6 +2,7 @@ package judge
 
 import (
 	"beego_judge/models"
+	"fmt"
 
 	"github.com/astaxie/beego"
 )
@@ -36,6 +37,7 @@ func (c *QueryController) Get() {
 	var err error
 	req.RunId, err = c.GetInt("runid", 1)
 	if err != nil {
+		fmt.Println(err.Error())
 		resp.ErrorMsg = err.Error()
 		return
 	}
@@ -43,6 +45,7 @@ func (c *QueryController) Get() {
 	item := models.Submit_status{}
 	isFinalRes, result, err := item.QueryResult(&req.RunId)
 	if err != nil {
+		fmt.Println(err.Error())
 		resp.ErrorMsg = err.Error()
 		return
 	}
