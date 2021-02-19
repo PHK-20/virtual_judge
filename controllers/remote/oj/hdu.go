@@ -16,21 +16,20 @@ import (
 	"github.com/axgle/mahonia"
 )
 
-type HDU struct {
-	OjBaseInfo    //base_info
-	WaitingResult []string
+type hdu struct {
+	OjBase
+	LoginUrl   string
+	SubmitUrl  string
+	StatusUrl  string
+	ProblemUrl string
 }
 
-var hdu *HDU
+var Hdu *hdu
 
 func init() {
-	hdu = &HDU{
-		OjBaseInfo{
-			Name:       "HDU",
-			LoginUrl:   "http://acm.hdu.edu.cn/userloginex.php?action=login",
-			SubmitUrl:  "http://acm.hdu.edu.cn/submit.php?action=submit",
-			StatusUrl:  "http://acm.hdu.edu.cn/status.php",
-			ProblemUrl: "http://acm.hdu.edu.cn/showproblem.php",
+	Hdu = &hdu{
+		OjBase{
+			Name: "HDU",
 			Language: map[string]int{
 				"ALL":    0,
 				"G++":    1,
@@ -42,13 +41,15 @@ func init() {
 				"C#":     7,
 			},
 		},
-		[]string{"Queuing", "Compiling", "Running"},
+		"http://acm.hdu.edu.cn/userloginex.php?action=login",
+		"http://acm.hdu.edu.cn/submit.php?action=submit",
+		"http://acm.hdu.edu.cn/status.php",
+		"http://acm.hdu.edu.cn/showproblem.php",
 	}
-	hdu.WebCookie, _ = hdu.Login()
-	OjManager[hdu.Name] = hdu
+	Hdu.WebCookie, _ = Hdu.Login()
 }
 
-func (oj *HDU) Login() (*http.Cookie, error) {
+func (oj *hdu) Login() (*http.Cookie, error) {
 	config := remote_account.GetConfig()
 	url_val := make(url.Values)
 	url_val.Add("username", config.Account.Hdu.Accounts[0].Username)
@@ -74,7 +75,7 @@ func (oj *HDU) Login() (*http.Cookie, error) {
 	return resp.Cookies()[0], nil
 }
 
-func (oj *HDU) Submit(pid, language, usercode *string) error {
+func (oj *hdu) Submit(pid, language, usercode *string) error {
 	// login and get cookie
 	url_val := make(url.Values)
 	url_val.Add("_usercode", base64.RawStdEncoding.EncodeToString([]byte(url.QueryEscape(*usercode))))
@@ -83,14 +84,15 @@ func (oj *HDU) Submit(pid, language, usercode *string) error {
 	if !ok {
 		return errors.New("wrong language")
 	}
-	url_val.Add("language", strconv.Itoa(language_int))
+	fmt.Println(language_int)
+	url_val.Add("language", strconv.Itoa(language_int-1))
 
 	req, err := http.NewRequest(http.MethodPost, oj.SubmitUrl, strings.NewReader(url_val.Encode()))
 	if err != nil {
 		return err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.AddCookie(hdu.WebCookie)
+	req.AddCookie(Hdu.WebCookie)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
@@ -114,7 +116,7 @@ func (oj *HDU) Submit(pid, language, usercode *string) error {
 	return nil
 }
 
-func (oj *HDU) GetRemoteRunId(pid, lang *string) (*int, error) {
+func (oj *hdu) GetRemoteRunId(pid, lang *string) (*int, error) {
 	username := remote_account.GetConfig().Account.Hdu.Accounts[0].Username
 	resp, err := http.Get(fmt.Sprintf("%v?pid=%v&user=%v&lang=%v", oj.StatusUrl, *pid, username, oj.Language[*lang]))
 	if err != nil {
@@ -131,8 +133,8 @@ func (oj *HDU) GetRemoteRunId(pid, lang *string) (*int, error) {
 	return &remote_run_id, nil
 }
 
-func (oj *HDU) QueryResult(remote_run_id *int) (*string, error) {
-	url_str := fmt.Sprintf("%s?first=%d", oj.StatusUrl, *remote_run_id)
+func (oj *hdu) QueryResult(remote_runid *int) (*string, error) {
+	url_str := fmt.Sprintf("%s?first=%d", oj.StatusUrl, *remote_runid)
 	req, err := http.NewRequest(http.MethodGet, url_str, nil)
 	if err != nil {
 		return nil, err
@@ -147,23 +149,26 @@ func (oj *HDU) QueryResult(remote_run_id *int) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	reg_str := fmt.Sprintf(">%d[\\s\\S]*?font.+?>.+?<", *remote_run_id)
+	reg_str := fmt.Sprintf(">%d[\\s\\S]*?font.+?>.+?<", *remote_runid)
 	str := regexp.MustCompile(reg_str).FindString(string(body))
 	result := str[strings.LastIndex(str, ">")+1 : len(str)-1]
+	if result == "" {
+		return nil, fmt.Errorf("%v queryResult fail ,remote_runid: %v", oj.Name, *remote_runid)
+	}
 	return &result, nil
 
 }
 
-func (oj *HDU) IsFinalResult(result *string) bool {
-	for _, val := range oj.WaitingResult {
-		if *result == val {
-			return false
-		}
-	}
-	return true
-}
+// func (oj *HDU) IsFinalResult(result *string) bool {
+// 	for _, val := range oj.WaitingResult {
+// 		if *result == val {
+// 			return false
+// 		}
+// 	}
+// 	return true
+// }
 
-func (oj *HDU) GetProblem(problemid *string) (*ProblemInfo, error) {
+func (oj *hdu) GetProblem(problemid *string) (*ProblemInfo, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s?pid=%s", oj.ProblemUrl, *problemid), nil)
 	if err != nil {
 		return nil, err
@@ -215,6 +220,6 @@ func (oj *HDU) GetProblem(problemid *string) (*ProblemInfo, error) {
 	return &info, nil
 }
 
-func (oj *HDU) GetLanguage() *map[string]int {
+func (oj *hdu) GetLanguage() *map[string]int {
 	return &oj.Language
 }

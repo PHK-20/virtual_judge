@@ -51,7 +51,7 @@ func (c *QueryController) Get() {
 	}
 	resp.Data.Result = *result
 	resp.Status = "success"
-	resp.Data.IsFinalResult = isFinalRes
+	resp.Data.IsFinalResult = *isFinalRes
 }
 
 func (c *QueryController) Options() {

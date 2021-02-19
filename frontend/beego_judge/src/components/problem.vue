@@ -12,12 +12,7 @@
               placeholder="oj"
               @change="needLanguage = true"
             >
-              <el-option
-                v-for="item in oj_array"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
+              <el-option v-for="item in oj_array" :key="item" :value="item">
               </el-option>
             </el-select>
           </el-col>
@@ -53,12 +48,7 @@
         <el-row :gutter="3" style="margin-top: 30px">
           <el-col :span="4">
             <el-select v-model="language" placeholder="language">
-              <el-option
-                v-for="item in lang_array"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
+              <el-option v-for="item in lang_array" :key="item" :value="item">
               </el-option>
             </el-select>
           </el-col>
@@ -85,14 +75,7 @@ export default {
   data() {
     return {
       problemid: "1000",
-      oj_array: [
-        {
-          value: "HDU",
-        },
-        {
-          value: "HNUST",
-        },
-      ],
+      oj_array: ["HDU"],
       oj: "HDU",
       title: "Hello World",
       description: "",
@@ -140,7 +123,7 @@ export default {
             if (this.needLanguage) {
               this.lang_array = [];
               resp.data.Data.Language.forEach((v) => {
-                this.lang_array.push({ value: v });
+                this.lang_array.push(v);
               });
               this.language = this.lang_array[0].value;
               this.needLanguage = false;

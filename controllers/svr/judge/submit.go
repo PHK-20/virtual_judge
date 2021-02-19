@@ -2,6 +2,7 @@ package judge
 
 import (
 	"beego_judge/controllers/remote/oj"
+	"beego_judge/controllers/remote/ojmanager"
 	"beego_judge/models"
 	"encoding/json"
 	"fmt"
@@ -45,6 +46,11 @@ func (c *SubmitController) Post() {
 		c.Data["json"] = &resp
 		c.ServeJSON()
 	}()
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 	req := reqSubmit{}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)
 	if err != nil {
@@ -59,51 +65,57 @@ func (c *SubmitController) Post() {
 		resp.ErrorMsg = "Submit code at least 50 characters"
 		return
 	}
-	oj, ok := oj.OjManager[req.Oj]
-	if !ok {
-		resp.ErrorMsg = "Wrong oj"
-		return
-	}
-	err = oj.Submit(&req.Problemid, &req.Language, &req.Usercode)
+	ojwork, err := ojmanager.GetOj(&req.Oj)
 	if err != nil {
-		fmt.Println(err.Error())
 		resp.ErrorMsg = err.Error()
 		return
 	}
 	runid := int(atomic.AddInt32(max_run_id, 1))
 	item := models.Submit_status{
-		RunId:        runid,
-		Username:     req.Username,
-		Oj:           req.Oj,
-		ProblemId:    req.Problemid,
-		Result:       "submiting",
-		Execute_Time: 0,
-		Memory:       0,
-		Language:     req.Language,
-		Length:       len(req.Usercode),
+		RunId:       runid,
+		UserName:    req.Username,
+		Oj:          req.Oj,
+		ProblemId:   req.Problemid,
+		Result:      "submiting",
+		ResultCode:  oj.WAIT,
+		ExecuteTime: 0,
+		Memory:      0,
+		Language:    req.Language,
+		Length:      len(req.Usercode),
 	}
-	item.AddItem()
+	err = item.AddItem()
+	if err != nil {
+		resp.ErrorMsg = "server error"
+		panic(err)
+	}
+	resp.Status = "success"
+	resp.Data.Runid = runid
 	go func() {
-		remote_runid, err := oj.GetRemoteRunId(&req.Problemid, &req.Language)
-		fmt.Printf("runid: %d -> remote_runid: %d\n", runid, *remote_runid)
+		err = ojwork.Submit(&req.Problemid, &req.Language, &req.Usercode)
+		var code int
+		var result string
 		if err != nil {
-			fmt.Printf("get remote_runid fail, runid: %v error: %v\n", runid, err.Error())
-			return
+			code = oj.SE
+			result = "submit fail"
+		} else {
+			code = oj.WAIT
+			result = "submiting"
 		}
-		item := models.Submit_status{
-			RunId:       runid,
-			RemoteRunId: *remote_runid,
-			Result:      "submited",
-		}
-		_, err = item.Update("RunId", "RemoteRunId", "Result")
-		if err != nil {
-			fmt.Printf("db: submit_status update fail, runid: %v error: %v", runid, err.Error())
-			return
+		if result == "submiting" {
+			go ojmanager.Run(&req.Oj, &req.Problemid, &req.Language, &runid)
+		} else {
+			item := models.Submit_status{
+				RunId:      runid,
+				Result:     result,
+				ResultCode: code,
+			}
+			_, err := item.Update("Result", "ResultCode")
+			if err != nil {
+				panic(err)
+			}
 		}
 	}()
 
-	resp.Status = "success"
-	resp.Data.Runid = runid
 }
 
 func (c *SubmitController) Options() {

@@ -2,7 +2,6 @@ package models
 
 import (
 	"beego_judge/controllers/remote/oj"
-	"errors"
 	"fmt"
 	"time"
 
@@ -10,17 +9,18 @@ import (
 )
 
 type Submit_status struct {
-	RunId        int       `orm:"column(runid);pk"`
-	RemoteRunId  int       `orm:"column(remote_runid)"`
-	Username     string    `orm:"column(username)"`
-	Oj           string    `orm:"column(oj)"`
-	ProblemId    string    `orm:"column(problemid)"`
-	Result       string    `orm:"column(result)"`
-	Execute_Time int       `orm:"column(execute_time)"`
-	Memory       int       `orm:"column(memory)"`
-	Language     string    `orm:"column(language)"`
-	Length       int       `orm:"column(length)"`
-	SubmitTime   time.Time `orm:"column(submit_time)"`
+	RunId       int       `orm:"column(runid);pk"`
+	RemoteRunId int       `orm:"column(remote_runid)"`
+	UserName    string    `orm:"column(username)"`
+	Oj          string    `orm:"column(oj)"`
+	ProblemId   string    `orm:"column(problemid)"`
+	Result      string    `orm:"column(result)"`
+	ResultCode  int       `orm:"column(result_code)"`
+	ExecuteTime int       `orm:"column(execute_time)"`
+	Memory      int       `orm:"column(memory)"`
+	Language    string    `orm:"column(language)"`
+	Length      int       `orm:"column(length)"`
+	SubmitTime  time.Time `orm:"column(submit_time)"`
 }
 
 func init() {
@@ -61,33 +61,16 @@ func (item *Submit_status) SetResult(runid *int, result *string) error {
 	return nil
 }
 
-func (item *Submit_status) QueryResult(runid *int) (bool, *string, error) {
-	is_final_res := true
+func (item *Submit_status) QueryResult(runid *int) (*bool, *string, error) {
+	is_final_res := bool(true)
 	db := orm.NewOrm()
 	item.RunId = *runid
 	err := db.Read(item)
 	if err != nil {
-		return false, nil, errors.New(fmt.Sprintf("db submit_status QueryResult fail , wrong runid: %v", *runid))
+		return nil, nil, err
 	}
-	result := &item.Result
-	if *result == "submiting" {
-		return false, result, nil
+	if item.ResultCode == oj.WAIT {
+		is_final_res = false
 	}
-	oj, ok := oj.OjManager[item.Oj]
-	if !ok {
-		fmt.Println(item)
-		return false, nil, errors.New("wrong oj")
-	}
-	if !oj.IsFinalResult(result) || *result == "submited" {
-		result, err = oj.QueryResult(&item.RemoteRunId)
-		if !oj.IsFinalResult(result) {
-			is_final_res = false
-		}
-		if err != nil {
-			return is_final_res, nil, err
-		}
-		go item.SetResult(runid, result)
-	}
-
-	return is_final_res, result, nil
+	return &is_final_res, &item.Result, nil
 }

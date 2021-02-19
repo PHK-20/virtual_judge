@@ -2,6 +2,7 @@ package problem
 
 import (
 	"beego_judge/controllers/remote/oj"
+	"beego_judge/controllers/remote/ojmanager"
 
 	"github.com/astaxie/beego"
 )
@@ -40,12 +41,11 @@ func (c *GetProblemController) Get() {
 		return
 	}
 	oj_name := c.GetString("oj", "HDU")
-	oj, ok := oj.OjManager[oj_name]
-	if !ok {
+	oj, err := ojmanager.GetOj(&oj_name)
+	if err != nil {
 		resp.ErrorMsg = "Wrong oj"
 		return
 	}
-	var err error
 	need_language, err := c.GetBool("needLanguage", true)
 	if err != nil {
 		resp.ErrorMsg = err.Error()
