@@ -51,28 +51,32 @@ const (
 
 func (oj *OjBase) GetResultCode(result *string) int {
 	switch *result {
-	case "Queuing":
-		return WAIT
-	case "Compiling":
-		return WAIT
-	case "Running":
-		return WAIT
 	case "Accepted":
 		return AC
-	case "Presentation Error":
-		return PE
 	case "Wrong Answer":
 		return WA
-	case "Runtime Error":
-		return RE
 	case "Time Limit Exceeded":
 		return TLE
+	case "Runtime Error":
+		return RE
+	case "Presentation Error":
+		return PE
 	case "Memory Limit Exceeded":
 		return MLE
 	case "Output Limit Exceeded":
 		return OLE
 	case "Compilation Error":
 		return CE
+	case "Submit Error":
+		return SE
+	case "Wating":
+		return WAIT
+	case "Queuing":
+		return WAIT
+	case "Compiling":
+		return WAIT
+	case "Running":
+		return WAIT
 	}
 	return OTHER
 }

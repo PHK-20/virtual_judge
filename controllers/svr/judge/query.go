@@ -33,21 +33,24 @@ func (c *QueryController) Get() {
 		c.Data["json"] = &resp
 		c.ServeJSON()
 	}()
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 	var req reqQuery
 	var err error
 	req.RunId, err = c.GetInt("runid", 1)
 	if err != nil {
-		fmt.Println(err.Error())
 		resp.ErrorMsg = err.Error()
-		return
+		panic(err)
 	}
 
 	item := models.Submit_status{}
 	isFinalRes, result, err := item.QueryResult(&req.RunId)
 	if err != nil {
-		fmt.Println(err.Error())
 		resp.ErrorMsg = err.Error()
-		return
+		panic(err)
 	}
 	resp.Data.Result = *result
 	resp.Status = "success"

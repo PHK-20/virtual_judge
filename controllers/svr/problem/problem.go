@@ -52,8 +52,10 @@ func (c *GetProblemController) Get() {
 		return
 	}
 	if need_language {
-		for k := range *oj.GetLanguage() {
-			resp.Data.Language = append(resp.Data.Language, k)
+		for key := range *oj.GetLanguage() {
+			if key != "ALL" {
+				resp.Data.Language = append(resp.Data.Language, key)
+			}
 		}
 	}
 	resp.Data.ProblemInfo, err = oj.GetProblem(&problemid)

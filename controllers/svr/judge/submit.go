@@ -96,7 +96,7 @@ func (c *SubmitController) Post() {
 		var result string
 		if err != nil {
 			code = oj.SE
-			result = "submit fail"
+			result = "Submit Fail"
 		} else {
 			code = oj.WAIT
 			result = "submiting"

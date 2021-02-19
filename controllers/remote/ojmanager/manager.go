@@ -41,7 +41,7 @@ func Run(oj_name, pid, lang *string, runid *int) {
 	if err != nil {
 		item := models.Submit_status{
 			RunId:      *runid,
-			Result:     "submit fail",
+			Result:     "Submit Fail",
 			ResultCode: oj.SE,
 		}
 		item.Update("Result", "ResultCode")

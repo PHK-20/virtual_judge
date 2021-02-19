@@ -125,7 +125,7 @@ export default {
               resp.data.Data.Language.forEach((v) => {
                 this.lang_array.push(v);
               });
-              this.language = this.lang_array[0].value;
+              this.language = this.lang_array[0];
               this.needLanguage = false;
             }
           } else {
@@ -135,11 +135,19 @@ export default {
             });
           }
         })
-        .catch((error) => {
-          console.error(error);
+        .catch((err) => {
+          this.notifications[runid].message = "Request Server Error";
+          this.notifications[runid].type = "error";
+          console.error(err);
         });
     },
     submit: function () {
+      if (this.language == "") {
+        this.$notify.error({
+          title: "Error",
+          message: "language is empty",
+        });
+      }
       this.$axios({
         method: "post",
         url: "/submit",
@@ -173,7 +181,7 @@ export default {
     queryResult: function (runid) {
       console.log(runid + " query");
       this.$axios
-        .get("/queryResult", {
+        .get("/result", {
           params: {
             runid: runid,
           },
