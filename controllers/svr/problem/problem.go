@@ -10,6 +10,7 @@ import (
 type GetProblemController struct {
 	beego.Controller
 }
+
 type reqProblem struct {
 	Problemid    string
 	Oj           string

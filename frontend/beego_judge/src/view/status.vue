@@ -4,7 +4,7 @@
       background
       layout="sizes, prev, pager, next"
       :total="total"
-      :current-page="page"
+      :current-page="currentPage"
       :page-sizes="[10, 20, 50, 100]"
       :page-size="pageSize"
       @current-change="handleCurrentChange"
@@ -17,7 +17,11 @@
       <el-table-column align="center" prop="UserName">
         <template slot="header" slot-scope="scope">
           <div>Username</div>
-          <el-input v-model="condition.username" @change="query()" size="mini" />
+          <el-input
+            v-model="condition.username"
+            @change="query()"
+            size="mini"
+          />
         </template>
       </el-table-column>
       <el-table-column align="center" label="OJ" prop="Oj">
@@ -32,7 +36,19 @@
       <el-table-column align="center" prop="ProblemId">
         <template slot="header" slot-scope="scope">
           <div>ProblemId</div>
-          <el-input v-model="condition.problemid" @change="query()"  size="mini" />
+          <el-input
+            v-model="condition.problemid"
+            @change="query()"
+            size="mini"
+          />
+        </template>
+        <template slot-scope="scope">
+          <el-link
+            type="primary"
+            :underline="false"
+            @click="toProblem(scope.row.Oj, scope.row.ProblemId)"
+            >{{ scope.row.ProblemId }}</el-link
+          >
         </template>
       </el-table-column>
       <el-table-column align="center" prop="Result">
@@ -57,7 +73,8 @@
       <el-table-column label="Mem(mb)" prop="Memory"> </el-table-column>
       <el-table-column label="Length" prop="Length"> </el-table-column>
       <el-table-column label="Lang" prop="Language"> </el-table-column>
-      <el-table-column label="Submit Time" prop="SubmitTime"> </el-table-column>
+      <el-table-column label="Submit Time" prop="SubmitTime" min-width="100%">
+      </el-table-column>
     </el-table>
   </div>
 </template>
@@ -97,6 +114,12 @@ export default {
     this.query();
   },
   methods: {
+    toProblem: function (oj, pid) {
+      this.$router.push({
+        name: "problem",
+        params: { oj: oj, pid: pid },
+      });
+    },
     query: function () {
       this.$axios
         .get("/status", {

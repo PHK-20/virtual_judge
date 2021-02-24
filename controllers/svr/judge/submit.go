@@ -16,11 +16,15 @@ type SubmitController struct {
 }
 
 type reqSubmit struct {
-	Username  string `json:"username"`
-	Oj        string `json:"oj"`
-	Problemid string `json:"problemid"`
-	Language  string `json:"language"`
-	Usercode  string `json:"usercode"`
+	Problem  problemInfo `json:"problem"`
+	Username string `json:"username"`
+	Usercode string `json:"usercode"`
+}
+
+type problemInfo struct {
+	Id       string
+	Oj       string
+	Language string
 }
 
 type respSubmit struct {
@@ -65,7 +69,7 @@ func (c *SubmitController) Post() {
 		resp.ErrorMsg = "Submit code at least 50 characters"
 		return
 	}
-	ojwork, err := ojmanager.GetOj(&req.Oj)
+	ojwork, err := ojmanager.GetOj(&req.Problem.Oj)
 	if err != nil {
 		resp.ErrorMsg = err.Error()
 		return
@@ -74,13 +78,13 @@ func (c *SubmitController) Post() {
 	item := models.Submit_status{
 		RunId:       runid,
 		UserName:    req.Username,
-		Oj:          req.Oj,
-		ProblemId:   req.Problemid,
+		Oj:          req.Problem.Oj,
+		ProblemId:   req.Problem.Id,
 		Result:      "submiting",
 		ResultCode:  oj.WAIT,
 		ExecuteTime: 0,
 		Memory:      0,
-		Language:    req.Language,
+		Language:    req.Problem.Language,
 		Length:      len(req.Usercode),
 	}
 	err = item.AddItem()
@@ -91,7 +95,7 @@ func (c *SubmitController) Post() {
 	resp.Status = "success"
 	resp.Data.Runid = runid
 	go func() {
-		err = ojwork.Submit(&req.Problemid, &req.Language, &req.Usercode)
+		err = ojwork.Submit(&req.Problem.Id, &req.Problem.Language, &req.Usercode)
 		var code int
 		var result string
 		if err != nil {
@@ -102,7 +106,7 @@ func (c *SubmitController) Post() {
 			result = "submiting"
 		}
 		if result == "submiting" {
-			go ojmanager.Run(&req.Oj, &req.Problemid, &req.Language, &runid)
+			go ojmanager.Run(&req.Problem.Oj, &req.Problem.Id, &req.Problem.Language, &runid)
 		} else {
 			item := models.Submit_status{
 				RunId:      runid,

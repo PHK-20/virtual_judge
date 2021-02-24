@@ -1,15 +1,15 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import main from '@/view/main'
+import problem from '@/view/problem'
 import status from '@/view/status'
 Vue.use(Router)
 
 export default new Router({
   routes: [
     {
-      path: '/',
-      name: 'main',
-      component: main
+      path: '/problem',
+      name: 'problem',
+      component: problem
     },
     {
       path: '/status',

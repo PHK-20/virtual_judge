@@ -4,11 +4,11 @@
       <el-col :span="20">
         <el-row :gutter="3">
           <el-col :span="4">
-            <el-input v-model="problemid" placeholder="problemid"></el-input>
+            <el-input v-model="problem.id" placeholder="problemid"></el-input>
           </el-col>
           <el-col :span="4">
             <el-select
-              v-model="oj"
+              v-model="problem.oj"
               placeholder="oj"
               @change="needLanguage = true"
             >
@@ -17,37 +17,41 @@
             </el-select>
           </el-col>
           <el-col :span="3">
-            <el-button type="primary" @click="queryProblem">Query</el-button>
+            <el-button
+              type="primary"
+              @click="queryProblem(problem.id, problem.oj)"
+              >Query</el-button
+            >
           </el-col>
         </el-row>
-        <h1>{{ title }}</h1>
+        <h1>{{ problem.title }}</h1>
         <div class="desc">Description</div>
         <el-card class="box-card">
-          <p class="content">{{ description }}</p>
+          <p class="content">{{ problem.description }}</p>
         </el-card>
         <div class="desc">Input</div>
         <el-card class="box-card">
-          <p class="content">{{ input }}</p>
+          <p class="content">{{ problem.input }}</p>
         </el-card>
         <div class="desc">Output</div>
         <el-card class="box-card">
-          <p class="content">{{ output }}</p>
+          <p class="content">{{ problem.output }}</p>
         </el-card>
         <div class="desc">Sample Input</div>
         <el-card class="box-card">
-          <p class="content">{{ sampleInput }}</p>
+          <p class="content">{{ problem.sampleInput }}</p>
         </el-card>
         <div class="desc">Sample Output</div>
         <el-card class="box-card">
-          <p class="content">{{ sampleOutput }}</p>
+          <p class="content">{{ problem.sampleOutput }}</p>
         </el-card>
-        <div class="desc" v-if="hint">Hint</div>
-        <el-card class="box-card" v-if="hint">
-          <p class="content">{{ hint }}</p>
+        <div class="desc" v-if="problem.hint">Hint</div>
+        <el-card class="box-card" v-if="problem.hint">
+          <p class="content">{{ problem.hint }}</p>
         </el-card>
         <el-row :gutter="3" style="margin-top: 30px">
           <el-col :span="4">
-            <el-select v-model="language" placeholder="language">
+            <el-select v-model="problem.language" placeholder="language">
               <el-option v-for="item in lang_array" :key="item" :value="item">
               </el-option>
             </el-select>
@@ -71,30 +75,38 @@
  
 <script>
 export default {
-  name: "problem",
+  props: {
+    username: String,
+  },
+  name: "problemTab",
   data() {
     return {
-      problemid: "1000",
       oj_array: ["HDU"],
-      oj: "HDU",
-      title: "Hello World",
-      description: "",
-      input: "",
-      output: "",
-      sampleInput: "",
-      sampleOutput: "",
-      hint: "",
+      problem: {
+        id: "",
+        oj: "HDU",
+        language: "",
+        title: "",
+        description: "",
+        input: "",
+        output: "",
+        sampleInput: "",
+        sampleOutput: "",
+        hint: "",
+      },
       lang_array: [],
-      language: "",
       usercode: "",
       needLanguage: true,
-      username: "LLLLLL0420",
       notifications: {},
     };
   },
   methods: {
-    queryProblem: function () {
-      if (this.problemid == "") {
+    queryProblem: function (pid, oj) {
+      console.log(pid);
+      console.log(oj);
+      this.problem.id = pid;
+      this.problem.oj = oj;
+      if (pid == "") {
         this.$notify.error({
           title: "Error",
           message: "problemid empty",
@@ -104,8 +116,8 @@ export default {
       this.$axios
         .get("/problem", {
           params: {
-            problemid: this.problemid,
-            oj: this.oj,
+            problemid: pid,
+            oj: oj,
             needLanguage: this.needLanguage,
           },
         })
@@ -113,21 +125,22 @@ export default {
           if (resp.data.Status == "success") {
             let info = {};
             info = resp.data.Data.ProblemInfo;
-            this.title = info.Title;
-            this.description = info.Description;
-            this.input = info.Input;
-            this.output = info.Output;
-            this.sampleInput = info.SampleInput;
-            this.sampleOutput = info.SampleOutput;
-            this.hint = info.Hint;
+            this.problem.title = info.Title;
+            this.problem.description = info.Description;
+            this.problem.input = info.Input;
+            this.problem.output = info.Output;
+            this.problem.sampleInput = info.SampleInput;
+            this.problem.sampleOutput = info.SampleOutput;
+            this.problem.hint = info.Hint;
             if (this.needLanguage) {
               this.lang_array = [];
               resp.data.Data.Language.forEach((v) => {
                 this.lang_array.push(v);
               });
-              this.language = this.lang_array[0];
+              this.problem.language = this.lang_array[0];
               this.needLanguage = false;
             }
+            this.$emit("title", this.problem.oj + "-" + this.problem.id);
           } else {
             this.$notify.error({
               title: "Error",
@@ -142,7 +155,7 @@ export default {
         });
     },
     submit: function () {
-      if (this.language == "") {
+      if (this.problem.language == "") {
         this.$notify.error({
           title: "Error",
           message: "language is empty",
@@ -152,11 +165,9 @@ export default {
         method: "post",
         url: "/submit",
         data: {
-          problemid: this.problemid,
-          usercode: this.usercode,
-          language: this.language,
+          problem: this.problem,
           username: this.username,
-          oj: this.oj,
+          usercode: this.usercode,
         },
       }).then((resp) => {
         if (resp.data.Status == "fail") {

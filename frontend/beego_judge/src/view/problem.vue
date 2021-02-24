@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div class="problem">
     <el-tabs
       v-model="activeTab"
       type="card"
@@ -12,7 +12,12 @@
         :key="item.name"
         :label="item.title"
         :name="item.name"
-        ><problemTab></problemTab>
+        :lazy="false"
+        ><problemTab
+          v-on:title="problemTitle"
+          :username="name"
+          ref="child"
+        ></problemTab>
       </el-tab-pane>
       <el-tab-pane key="add" name="add">
         <div slot="label" style="font-size: 15px" class="el-icon-plus"></div>
@@ -22,7 +27,7 @@
 </template>
  
 <script>
-import problemTab from "@/components/problem";
+import problemTab from "@/components/problemTab";
 export default {
   name: "problem",
   components: {
@@ -33,12 +38,27 @@ export default {
       activeTab: "0",
       tabs: [],
       tabIndex: 0,
+      name: "LLLLLL0420",
+      pid: "",
+      oj: "",
     };
   },
-  mounted: function () {
+  created: function () {
     this.addTab();
   },
+  mounted: function () {
+    this.pid=this.$route.params.pid;
+    this.oj=this.$route.params.oj;
+    this.$refs.child[0].queryProblem(this.pid, this.oj);
+  },
   methods: {
+    problemTitle: function (childValue) {
+      this.tabs.forEach((item) => {
+        if (item.name == this.activeTab) {
+          item.title = childValue;
+        }
+      });
+    },
     beforeLeave(currentName, oldName) {
       //重点，如果name是add，则什么都不触发
       if (currentName == "add") {

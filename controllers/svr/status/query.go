@@ -67,6 +67,7 @@ func (c *QueryController) Get() {
 	json.Unmarshal([]byte(req.condition), &con)
 	o := orm.NewOrm()
 	qs := o.QueryTable("submit_status")
+	qs = qs.OrderBy("-RunId")
 	if con.Username != "" {
 		qs = qs.Filter("UserName", con.Username)
 	}
