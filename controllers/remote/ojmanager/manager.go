@@ -64,10 +64,10 @@ func Run(oj_name, pid, lang *string, runid *int) {
 			if err != nil {
 				panic(fmt.Sprintf("runid: %v error: %v\n", *runid, err.Error()))
 			}
-			if code := oj_work.GetResultCode(result); code != oj.WAIT {
+			if code := oj_work.GetResultCode(&result.Res); code != oj.WAIT {
 				item := models.Submit_status{
 					RunId:      *runid,
-					Result:     *result,
+					Result:     result.Res,
 					ResultCode: code,
 				}
 				_, err = item.Update("RemoteRunId", "Result", "ResultCode")

@@ -133,7 +133,7 @@ func (oj *hdu) GetRemoteRunId(pid, lang *string) (*int, error) {
 	return &remote_run_id, nil
 }
 
-func (oj *hdu) QueryResult(remote_runid *int) (*string, error) {
+func (oj *hdu) QueryResult(remote_runid *int) (*ResultInfo, error) {
 	url_str := fmt.Sprintf("%s?first=%d", oj.StatusUrl, *remote_runid)
 	req, err := http.NewRequest(http.MethodGet, url_str, nil)
 	if err != nil {
@@ -149,24 +149,30 @@ func (oj *hdu) QueryResult(remote_runid *int) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
+	//result string
 	reg_str := fmt.Sprintf(">%d[\\s\\S]*?font.+?>.+?<", *remote_runid)
 	str := regexp.MustCompile(reg_str).FindString(string(body))
-	result := str[strings.LastIndex(str, ">")+1 : len(str)-1]
-	if result == "" {
+	res := str[strings.LastIndex(str, ">")+1 : len(str)-1]
+	if res == "" {
 		return nil, fmt.Errorf("%v queryResult fail ,remote_runid: %v", oj.Name, *remote_runid)
 	}
+	//time cost
+	reg_str = fmt.Sprintf(">%d[\\s\\S\n]*?MS", *remote_runid)
+	str = regexp.MustCompile(reg_str).FindString(string(body))
+	time_cost := str[strings.LastIndex(str, ">")+1:]
+	//Mem cost
+	reg_str = fmt.Sprintf(">%d[\\s\\S\n]*?K<", *remote_runid)
+	str = regexp.MustCompile(reg_str).FindString(string(body))
+	mem_cost := str[strings.LastIndex(str, ">")+1 : len(str)-1]
+
+	result := ResultInfo{}
+	result.Res = res
+	result.TimeCost = time_cost
+	result.MemCost = mem_cost
+	fmt.Println(result)
 	return &result, nil
 
 }
-
-// func (oj *HDU) IsFinalResult(result *string) bool {
-// 	for _, val := range oj.WaitingResult {
-// 		if *result == val {
-// 			return false
-// 		}
-// 	}
-// 	return true
-// }
 
 func (oj *hdu) GetProblem(problemid *string) (*ProblemInfo, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s?pid=%s", oj.ProblemUrl, *problemid), nil)

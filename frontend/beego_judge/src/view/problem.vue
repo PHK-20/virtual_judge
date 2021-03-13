@@ -47,9 +47,11 @@ export default {
     this.addTab();
   },
   mounted: function () {
-    this.pid=this.$route.params.pid;
-    this.oj=this.$route.params.oj;
-    this.$refs.child[0].queryProblem(this.pid, this.oj);
+    if (this.$route.params.pid && this.$route.params.oj) {
+      this.pid = this.$route.params.pid;
+      this.oj = this.$route.params.oj;
+      this.$refs.child[0].queryProblem(this.pid, this.oj);
+    }
   },
   methods: {
     problemTitle: function (childValue) {

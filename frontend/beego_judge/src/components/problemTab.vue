@@ -102,8 +102,6 @@ export default {
   },
   methods: {
     queryProblem: function (pid, oj) {
-      console.log(pid);
-      console.log(oj);
       this.problem.id = pid;
       this.problem.oj = oj;
       if (pid == "") {
