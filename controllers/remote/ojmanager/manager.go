@@ -68,9 +68,12 @@ func Run(oj_name, pid, lang *string, runid *int) {
 				item := models.Submit_status{
 					RunId:      *runid,
 					Result:     result.Res,
+					ExecuteTime: result.TimeCost,
+					Memory: result.MemCost,
 					ResultCode: code,
 				}
-				_, err = item.Update("RemoteRunId", "Result", "ResultCode")
+				fmt.Println(item)
+				_, err = item.Update("RemoteRunId", "Result", "ResultCode","ExecuteTime","Memory")
 				if err != nil {
 					panic(fmt.Sprintf("runid: %v error: %v\n", *runid, err.Error()))
 				}

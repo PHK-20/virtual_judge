@@ -17,8 +17,8 @@ type SubmitController struct {
 
 type reqSubmit struct {
 	Problem  problemInfo `json:"problem"`
-	Username string `json:"username"`
-	Usercode string `json:"usercode"`
+	Username string      `json:"username"`
+	Usercode string      `json:"usercode"`
 }
 
 type problemInfo struct {
@@ -82,8 +82,8 @@ func (c *SubmitController) Post() {
 		ProblemId:   req.Problem.Id,
 		Result:      "submiting",
 		ResultCode:  oj.WAIT,
-		ExecuteTime: 0,
-		Memory:      0,
+		ExecuteTime: "0",
+		Memory:      "0",
 		Language:    req.Problem.Language,
 		Length:      len(req.Usercode),
 	}

@@ -196,8 +196,9 @@ export default {
           },
         })
         .then((resp) => {
+          console.log(resp);
           if (resp.data.Status == "success") {
-            let result = resp.data.Data.Result;
+            let result = resp.data.Data.Result.Res;
             if (result != this.notifications[runid].status) {
               if (resp.data.Data.IsFinalResult == true) {
                 console.log(runid + " query finish");

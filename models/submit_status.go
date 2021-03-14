@@ -16,8 +16,8 @@ type Submit_status struct {
 	ProblemId   string    `orm:"column(problemid)"`
 	Result      string    `orm:"column(result)"`
 	ResultCode  int       `orm:"column(result_code)"`
-	ExecuteTime int       `orm:"column(execute_time)"`
-	Memory      int       `orm:"column(memory)"`
+	ExecuteTime string    `orm:"column(execute_time)"`
+	Memory      string    `orm:"column(memory)"`
 	Language    string    `orm:"column(language)"`
 	Length      int       `orm:"column(length)"`
 	SubmitTime  time.Time `orm:"column(submit_time)"`
@@ -61,7 +61,7 @@ func (item *Submit_status) SetResult(runid *int, result *string) error {
 	return nil
 }
 
-func (item *Submit_status) QueryResult(runid *int) (*bool, *string, error) {
+func (item *Submit_status) QueryResult(runid *int) (*bool, *oj.ResultInfo, error) {
 	is_final_res := bool(true)
 	db := orm.NewOrm()
 	item.RunId = *runid
@@ -72,5 +72,10 @@ func (item *Submit_status) QueryResult(runid *int) (*bool, *string, error) {
 	if item.ResultCode == oj.WAIT {
 		is_final_res = false
 	}
-	return &is_final_res, &item.Result, nil
+	result := oj.ResultInfo{
+		Res:      item.Result,
+		TimeCost: item.ExecuteTime,
+		MemCost:  item.Memory,
+	}
+	return &is_final_res, &result, nil
 }

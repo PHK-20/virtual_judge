@@ -16,7 +16,6 @@ type OjInterface interface {
 	Submit(pid, language, usercode *string) error
 	GetRemoteRunId(pid, language *string) (*int, error)
 	QueryResult(remote_run_id *int) (*ResultInfo, error)
-	//IsFinalResult(result *string) bool
 	GetProblem(problemid *string) (*ProblemInfo, error)
 	GetLanguage() *map[string]int
 	GetResultCode(*string) int

@@ -1,6 +1,7 @@
 package judge
 
 import (
+	"beego_judge/controllers/remote/oj"
 	"beego_judge/models"
 	"fmt"
 
@@ -21,7 +22,7 @@ type respQuery struct {
 }
 
 type DataQuery struct {
-	Result        string
+	Result        oj.ResultInfo
 	IsFinalResult bool
 }
 

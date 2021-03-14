@@ -169,7 +169,6 @@ func (oj *hdu) QueryResult(remote_runid *int) (*ResultInfo, error) {
 	result.Res = res
 	result.TimeCost = time_cost
 	result.MemCost = mem_cost
-	fmt.Println(result)
 	return &result, nil
 
 }
