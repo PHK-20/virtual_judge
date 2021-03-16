@@ -66,14 +66,13 @@ func Run(oj_name, pid, lang *string, runid *int) {
 			}
 			if code := oj_work.GetResultCode(&result.Res); code != oj.WAIT {
 				item := models.Submit_status{
-					RunId:      *runid,
-					Result:     result.Res,
+					RunId:       *runid,
+					Result:      result.Res,
 					ExecuteTime: result.TimeCost,
-					Memory: result.MemCost,
-					ResultCode: code,
+					Memory:      result.MemCost,
+					ResultCode:  code,
 				}
-				fmt.Println(item)
-				_, err = item.Update("RemoteRunId", "Result", "ResultCode","ExecuteTime","Memory")
+				_, err = item.Update("RemoteRunId", "Result", "ResultCode", "ExecuteTime", "Memory")
 				if err != nil {
 					panic(fmt.Sprintf("runid: %v error: %v\n", *runid, err.Error()))
 				}

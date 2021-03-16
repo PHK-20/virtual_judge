@@ -216,9 +216,15 @@ func (oj *hdu) GetProblem(problemid *string) (*ProblemInfo, error) {
 		info.Hint = info.SampleOutput[strings.LastIndex(info.SampleOutput, "Hint")+4:]
 		info.SampleOutput = info.SampleOutput[:strings.LastIndex(info.SampleOutput, "Hint")]
 	}
+
+	if strings.Contains(html_utf8, "Source") {
+		reg_str := "source[\\s\\S\\n]*?<"
+		str := regexp.MustCompile(reg_str).FindString(html_utf8)
+		info.Src = str[strings.LastIndex(str, ">")+1 : len(str)-1]
+	}
 	reg_str := "Time Limit: [\\s\\S]*?\\)"
 	str := regexp.MustCompile(reg_str).FindString(html_utf8)
-	info.TimeLimit = str[strings.LastIndex(str, ":"):]
+	info.TimeLimit = str[strings.LastIndex(str, ":")+1:]
 	reg_str = "Memory Limit: [\\s\\S]*?\\)"
 	str = regexp.MustCompile(reg_str).FindString(html_utf8)
 	info.MemoryLimit = str[strings.LastIndex(str, ":")+2:]

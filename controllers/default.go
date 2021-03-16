@@ -12,4 +12,3 @@ func (c *MainController) Get() {
 	c.TplName = "index.html"
 	c.Render()
 }
-

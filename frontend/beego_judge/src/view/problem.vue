@@ -1,28 +1,38 @@
 <template>
   <div class="problem">
-    <el-tabs
-      v-model="activeTab"
-      type="card"
-      @tab-remove="removeTab"
-      :before-leave="beforeLeave"
-    >
-      <el-tab-pane
-        closable
-        v-for="item in tabs"
-        :key="item.name"
-        :label="item.title"
-        :name="item.name"
-        :lazy="false"
-        ><problemTab
-          v-on:title="problemTitle"
-          :username="name"
-          ref="child"
-        ></problemTab>
-      </el-tab-pane>
-      <el-tab-pane key="add" name="add">
-        <div slot="label" style="font-size: 15px" class="el-icon-plus"></div>
-      </el-tab-pane>
-    </el-tabs>
+    <el-row>
+      <el-col :span="22" :offset="1">
+        <el-tabs
+          v-model="activeTab"
+          type="card"
+          @tab-remove="removeTab"
+          :before-leave="beforeLeave"
+        >
+          <el-tab-pane
+            closable
+            v-for="item in tabs"
+            :key="item.name"
+            :label="item.title"
+            :name="item.name"
+            :lazy="false"
+            ><problemTab
+              v-on:title="problemTitle"
+              v-bind:pid="pid"
+              v-bind:oj="oj"
+              :username="name"
+              ref="child"
+            ></problemTab>
+          </el-tab-pane>
+          <el-tab-pane key="add" name="add">
+            <div
+              slot="label"
+              style="font-size: 15px"
+              class="el-icon-plus"
+            ></div>
+          </el-tab-pane>
+        </el-tabs>
+      </el-col>
+    </el-row>
   </div>
 </template>
  
@@ -39,21 +49,20 @@ export default {
       tabs: [],
       tabIndex: 0,
       name: "LLLLLL0420",
-      pid: "",
-      oj: "",
+      pid: "1000",
+      oj: "HDU",
     };
   },
-  created: function () {
+  mounted: function () {
     this.addTab();
   },
-  mounted: function () {
-    if (this.$route.params.pid && this.$route.params.oj) {
-      this.pid = this.$route.params.pid;
-      this.oj = this.$route.params.oj;
-      this.$refs.child[0].queryProblem(this.pid, this.oj);
-    }
-  },
   methods: {
+    toProblem: function (oj, pid) {
+      this.addTab();
+      this.oj = oj;
+      this.pid = pid;
+    },
+
     problemTitle: function (childValue) {
       this.tabs.forEach((item) => {
         if (item.name == this.activeTab) {
@@ -93,7 +102,6 @@ export default {
           }
         });
       }
-
       this.activeTab = activeName;
       this.tabs = tabs.filter((tab) => tab.name !== targetName);
     },

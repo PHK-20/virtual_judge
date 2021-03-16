@@ -1,17 +1,6 @@
 <template>
   <div class="status">
-    <el-pagination
-      background
-      layout="sizes, prev, pager, next"
-      :total="total"
-      :current-page="currentPage"
-      :page-sizes="[10, 20, 50, 100]"
-      :page-size="pageSize"
-      @current-change="handleCurrentChange"
-      @size-change="handleSizeChange"
-    >
-    </el-pagination>
-    <el-table :data="tableData" stripe style="width: 100%">
+    <el-table :data="tableData" stripe style="width: 100%" v-loading="loading">
       <el-table-column align="center" label="RunId" prop="RunId">
       </el-table-column>
       <el-table-column align="center" prop="UserName">
@@ -76,6 +65,18 @@
       <el-table-column label="Submit Time" prop="SubmitTime" min-width="100%">
       </el-table-column>
     </el-table>
+    <el-pagination
+      style="margin-top: 20px"
+      background
+      layout="sizes, prev, pager, next"
+      :total="total"
+      :current-page="currentPage"
+      :page-sizes="[10, 20, 50, 100]"
+      :page-size="pageSize"
+      @current-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+    </el-pagination>
   </div>
 </template>
 
@@ -83,6 +84,7 @@
 export default {
   data() {
     return {
+      loading: false,
       pageSize: 10,
       currentPage: 1,
       total: 0,
@@ -110,17 +112,13 @@ export default {
       tableData: [],
     };
   },
-  mounted: function () {
-    this.query();
-  },
   methods: {
     toProblem: function (oj, pid) {
-      this.$router.push({
-        name: "problem",
-        params: { oj: oj, pid: pid },
-      });
+      this.$emit("toProblem", oj, pid);
     },
     query: function () {
+      this.loading = true;
+      console.log("querStatus");
       this.$axios
         .get("/status", {
           params: {
@@ -130,7 +128,6 @@ export default {
           },
         })
         .then((resp) => {
-          console.log(resp);
           if (resp.data.Status == "success") {
             this.tableData = [];
             let result = resp.data.Data;
@@ -139,6 +136,7 @@ export default {
             });
             this.total = result.Total;
           }
+          this.loading = false;
         })
         .catch((err) => {
           console.error(err);

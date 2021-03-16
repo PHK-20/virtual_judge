@@ -1,74 +1,77 @@
 <template>
   <div class="problem">
     <el-row>
-      <el-col :span="20">
-        <el-row :gutter="3">
-          <el-col :span="4">
-            <el-input v-model="problem.id" placeholder="problemid"></el-input>
-          </el-col>
-          <el-col :span="4">
-            <el-select
-              v-model="problem.oj"
-              placeholder="oj"
-              @change="needLanguage = true"
-            >
-              <el-option v-for="item in oj_array" :key="item" :value="item">
-              </el-option>
-            </el-select>
-          </el-col>
-          <el-col :span="3">
-            <el-button
-              type="primary"
-              @click="queryProblem(problem.id, problem.oj)"
-              >Query</el-button
-            >
-          </el-col>
-        </el-row>
-        <h1>{{ problem.title }}</h1>
-        <div class="desc">Description</div>
-        <el-card class="box-card">
-          <p class="content">{{ problem.description }}</p>
-        </el-card>
-        <div class="desc">Input</div>
-        <el-card class="box-card">
-          <p class="content">{{ problem.input }}</p>
-        </el-card>
-        <div class="desc">Output</div>
-        <el-card class="box-card">
-          <p class="content">{{ problem.output }}</p>
-        </el-card>
-        <div class="desc">Sample Input</div>
-        <el-card class="box-card">
-          <p class="content">{{ problem.sampleInput }}</p>
-        </el-card>
-        <div class="desc">Sample Output</div>
-        <el-card class="box-card">
-          <p class="content">{{ problem.sampleOutput }}</p>
-        </el-card>
-        <div class="desc" v-if="problem.hint">Hint</div>
-        <el-card class="box-card" v-if="problem.hint">
-          <p class="content">{{ problem.hint }}</p>
-        </el-card>
-        <el-row :gutter="3" style="margin-top: 30px">
-          <el-col :span="4">
-            <el-select v-model="problem.language" placeholder="language">
-              <el-option v-for="item in lang_array" :key="item" :value="item">
-              </el-option>
-            </el-select>
-          </el-col>
-          <el-col :span="3">
-            <el-button type="primary" @click="submit">Submit</el-button>
-          </el-col>
-        </el-row>
-        <el-input
-          type="textarea"
-          :autosize="{ minRows: 20 }"
-          placeholder="code"
-          v-model="usercode"
-          style="margin-top: 20px"
-        >
-        </el-input>
-      </el-col>
+      <el-col :span="20"></el-col>
+      <el-row :gutter="3">
+        <el-col :span="4">
+          <el-input v-model="problem.id" placeholder="problemid"></el-input>
+        </el-col>
+        <el-col :span="4">
+          <el-select
+            v-model="problem.oj"
+            placeholder="oj"
+            @change="needLanguage = true"
+          >
+            <el-option v-for="item in oj_array" :key="item" :value="item">
+            </el-option>
+          </el-select>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="primary" @click="queryProblem()">Query</el-button>
+        </el-col>
+      </el-row>
+      <h1>{{ problem.title }}</h1>
+      <div>
+        Time Limit: {{ problem.timeLimit }}<br />
+        Memory Limit: {{ problem.memoryLimit }}
+      </div>
+      <div class="desc">Description</div>
+      <el-card class="box-card">
+        <p class="content">{{ problem.description }}</p>
+      </el-card>
+      <div class="desc">Input</div>
+      <el-card class="box-card">
+        <p class="content">{{ problem.input }}</p>
+      </el-card>
+      <div class="desc">Output</div>
+      <el-card class="box-card">
+        <p class="content">{{ problem.output }}</p>
+      </el-card>
+      <div class="desc">Sample Input</div>
+      <el-card class="box-card">
+        <p class="content">{{ problem.sampleInput }}</p>
+      </el-card>
+      <div class="desc">Sample Output</div>
+      <el-card class="box-card">
+        <p class="content">{{ problem.sampleOutput }}</p>
+      </el-card>
+      <div class="desc" v-if="problem.hint">Hint</div>
+      <el-card class="box-card" v-if="problem.hint">
+        <p class="content">{{ problem.hint }}</p>
+      </el-card>
+      <div class="desc" v-if="problem.src">Source</div>
+      <el-card class="box-card" v-if="problem.src">
+        <p class="content">{{ problem.src }}</p>
+      </el-card>
+      <el-row :gutter="3" style="margin-top: 30px">
+        <el-col :span="4">
+          <el-select v-model="problem.language" placeholder="language">
+            <el-option v-for="item in lang_array" :key="item" :value="item">
+            </el-option>
+          </el-select>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="primary" @click="submit">Submit</el-button>
+        </el-col>
+      </el-row>
+      <el-input
+        type="textarea"
+        :autosize="{ minRows: 20 }"
+        placeholder="code"
+        v-model="usercode"
+        style="margin-top: 20px"
+      >
+      </el-input>
     </el-row>
   </div>
 </template>
@@ -77,6 +80,8 @@
 export default {
   props: {
     username: String,
+    pid: String,
+    oj: String,
   },
   name: "problemTab",
   data() {
@@ -84,15 +89,18 @@ export default {
       oj_array: ["HDU"],
       problem: {
         id: "",
-        oj: "HDU",
+        oj: "",
         language: "",
-        title: "",
+        title: "HelloWorld",
         description: "",
         input: "",
         output: "",
         sampleInput: "",
         sampleOutput: "",
+        timeLimit: "0MS",
+        memoryLimit: "0KB",
         hint: "",
+        src: "",
       },
       lang_array: [],
       usercode: "",
@@ -100,11 +108,15 @@ export default {
       notifications: {},
     };
   },
+  mounted: function () {
+    this.problem.id = this.pid;
+    this.problem.oj = this.oj;
+    this.queryProblem();
+  },
   methods: {
-    queryProblem: function (pid, oj) {
-      this.problem.id = pid;
-      this.problem.oj = oj;
-      if (pid == "") {
+    queryProblem: function () {
+      console.log("querProblem " + this.problem.oj + " " + this.problem.id);
+      if (this.problem.id == "") {
         this.$notify.error({
           title: "Error",
           message: "problemid empty",
@@ -114,8 +126,8 @@ export default {
       this.$axios
         .get("/problem", {
           params: {
-            problemid: pid,
-            oj: oj,
+            problemid: this.problem.id,
+            oj: this.problem.oj,
             needLanguage: this.needLanguage,
           },
         })
@@ -130,6 +142,9 @@ export default {
             this.problem.sampleInput = info.SampleInput;
             this.problem.sampleOutput = info.SampleOutput;
             this.problem.hint = info.Hint;
+            this.problem.timeLimit = info.TimeLimit;
+            this.problem.memoryLimit = info.MemoryLimit;
+            this.problem.src = info.Src;
             if (this.needLanguage) {
               this.lang_array = [];
               resp.data.Data.Language.forEach((v) => {
@@ -196,7 +211,6 @@ export default {
           },
         })
         .then((resp) => {
-          console.log(resp);
           if (resp.data.Status == "success") {
             let result = resp.data.Data.Result.Res;
             if (result != this.notifications[runid].status) {

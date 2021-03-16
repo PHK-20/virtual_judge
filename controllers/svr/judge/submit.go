@@ -69,7 +69,7 @@ func (c *SubmitController) Post() {
 		resp.ErrorMsg = "Submit code at least 50 characters"
 		return
 	}
-	ojwork, err := ojmanager.GetOj(&req.Problem.Oj)
+	_, err = ojmanager.GetOj(&req.Problem.Oj)
 	if err != nil {
 		resp.ErrorMsg = err.Error()
 		return
@@ -94,35 +94,28 @@ func (c *SubmitController) Post() {
 	}
 	resp.Status = "success"
 	resp.Data.Runid = runid
-	go func() {
-		err = ojwork.Submit(&req.Problem.Id, &req.Problem.Language, &req.Usercode)
-		var code int
-		var result string
-		if err != nil {
-			code = oj.SE
-			result = "Submit Fail"
-		} else {
-			code = oj.WAIT
-			result = "submiting"
-		}
-		if result == "submiting" {
-			go ojmanager.Run(&req.Problem.Oj, &req.Problem.Id, &req.Problem.Language, &runid)
-		} else {
-			item := models.Submit_status{
-				RunId:      runid,
-				Result:     result,
-				ResultCode: code,
-			}
-			_, err := item.Update("Result", "ResultCode")
-			if err != nil {
-				panic(err)
-			}
-		}
-	}()
-
+	go Submit(&req, &resp)
 }
 
 func (c *SubmitController) Options() {
 	c.Data["json"] = map[string]interface{}{"status": 200, "message": "ok", "moreinfo": ""}
 	c.ServeJSON()
+}
+
+func Submit(req *reqSubmit, resp *respSubmit) {
+	ojwork, _ := ojmanager.GetOj(&req.Problem.Oj)
+	err := ojwork.Submit(&req.Problem.Id, &req.Problem.Language, &req.Usercode)
+	if err != nil {
+		item := models.Submit_status{
+			RunId:      resp.Data.Runid,
+			Result:     "Submit Fail",
+			ResultCode: oj.SE,
+		}
+		_, err := item.Update("Result", "ResultCode")
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		go ojmanager.Run(&req.Problem.Oj, &req.Problem.Id, &req.Problem.Language, &resp.Data.Runid)
+	}
 }

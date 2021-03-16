@@ -31,6 +31,7 @@ type ProblemInfo struct {
 	TimeLimit    string
 	MemoryLimit  string
 	Hint         string
+	Src          string
 }
 
 type ResultInfo struct {
