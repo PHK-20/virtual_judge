@@ -5,6 +5,7 @@ import (
 	"beego_judge/controllers/svr/judge"
 	"beego_judge/controllers/svr/problem"
 	"beego_judge/controllers/svr/status"
+	"beego_judge/controllers/svr/user"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
@@ -18,14 +19,19 @@ func init() {
 		c.ResponseWriter.Header().Set("Access-Control-Max-Age", "1728000")
 		c.ResponseWriter.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept,Accept-Encoding") //header的类型
 	}
+	//跨域请求
 	beego.InsertFilter("/submit", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/problem", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/result", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/status", beego.BeforeRouter, allow_access)
+	beego.InsertFilter("/login", beego.BeforeRouter, allow_access)
+	beego.InsertFilter("/register", beego.BeforeRouter, allow_access)
 
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/submit", &judge.SubmitController{})
 	beego.Router("/result", &judge.QueryController{})
 	beego.Router("/problem", &problem.GetProblemController{})
 	beego.Router("/status", &status.QueryController{})
+	beego.Router("/login", &user.LoginController{})
+	beego.Router("/register", &user.RegisterController{})
 }

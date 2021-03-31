@@ -5,13 +5,8 @@ user="root"
 password="123456"
 dbname="beego_judge"
 
-
-raw_sql="DROP TABLE submit_status";
-
-mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
-
 raw_sql="
-    CREATE TABLE submit_status (
+    CREATE TABLE IF NOT EXISTS submit_status (
         runid INT NOT NULL,
         remote_runid INT NOT NULL,
         username VARCHAR(20) NOT NULL,
@@ -29,9 +24,18 @@ raw_sql="
 "
 mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
 
+
+raw_sql="DROP TABLE user_info";
+
+mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
+
 raw_sql="
-    INSERT INTO submit_status 
-    (runid,remote_runid,username,oj,problemid,result,result_code,language,length) 
-    values (1,1,'LLLLLL0420','HUD','1000','Submited',10,'G++',100);
+    CREATE TABLE  IF NOT EXISTS user_info (
+        username VARCHAR(20) NOT NULL,
+        password VARCHAR(32) NOT NULL,
+        register_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (username)
+    );
 "
 mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
+
