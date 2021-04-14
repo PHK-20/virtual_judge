@@ -17,8 +17,8 @@
             :lazy="false"
             ><problemTab
               v-on:title="problemTitle"
-              v-bind:pid="pid"
-              v-bind:oj="oj"
+              :pid="pid"
+              :oj="oj"
               :username="name"
               ref="child"
             ></problemTab>
@@ -40,6 +40,9 @@
 import problemTab from "@/components/problemTab";
 export default {
   name: "problem",
+  props: {
+    name: String,
+  },
   components: {
     problemTab,
   },
@@ -48,7 +51,6 @@ export default {
       activeTab: "0",
       tabs: [],
       tabIndex: 0,
-      name: "LLLLLL0420",
       pid: "1000",
       oj: "HDU",
     };
@@ -57,13 +59,12 @@ export default {
     this.addTab();
   },
   methods: {
-    toProblem: function (oj, pid) {
+    toProblem(oj, pid) {
       this.addTab();
       this.oj = oj;
       this.pid = pid;
     },
-
-    problemTitle: function (childValue) {
+    problemTitle(childValue) {
       this.tabs.forEach((item) => {
         if (item.name == this.activeTab) {
           item.title = childValue;

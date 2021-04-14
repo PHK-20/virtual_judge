@@ -1,10 +1,10 @@
 <template>
-  <div class="status">
+  <div class="status" style="margin-left: 10px">
     <el-table :data="tableData" stripe style="width: 100%" v-loading="loading">
       <el-table-column align="center" label="RunId" prop="RunId">
       </el-table-column>
       <el-table-column align="center" prop="UserName">
-        <template slot="header" slot-scope="scope">
+        <template slot="header">
           <div>Username</div>
           <el-input
             v-model="condition.username"
@@ -14,7 +14,7 @@
         </template>
       </el-table-column>
       <el-table-column align="center" label="OJ" prop="Oj">
-        <template slot="header" slot-scope="scope">
+        <template slot="header">
           <div>OJ</div>
           <el-select v-model="condition.oj" @change="query()" size="mini">
             <el-option v-for="item in ojArray" :key="item" :value="item">
@@ -23,7 +23,7 @@
         </template>
       </el-table-column>
       <el-table-column align="center" prop="ProblemId">
-        <template slot="header" slot-scope="scope">
+        <template slot="header">
           <div>ProblemId</div>
           <el-input
             v-model="condition.problemid"
@@ -41,7 +41,7 @@
         </template>
       </el-table-column>
       <el-table-column align="center" prop="Result">
-        <template slot="header" slot-scope="scope">
+        <template slot="header">
           <div>Result</div>
           <el-select v-model="condition.result" @change="query()" size="mini">
             <el-option v-for="item in resultArray" :key="item" :value="item">

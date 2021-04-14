@@ -14,9 +14,11 @@
       <el-menu-item index="match">
         <span slot="title">比赛</span>
       </el-menu-item>
-
-      <el-menu-item index="user">
-        <span slot="title">{{ user }}</span>
+      <el-menu-item index="login" v-if="title === 'login'">
+        <span slot="title">登录</span>
+      </el-menu-item>
+      <el-menu-item index="user" v-else>
+        <span slot="title">{{ title }}</span>
       </el-menu-item>
     </el-menu>
   </div>
@@ -26,9 +28,8 @@
 export default {
   data() {
     return {
-      user: "登录",
-      username: "",
-      password: "",
+      title: "",
+      index: "",
     };
   },
   methods: {
@@ -36,16 +37,8 @@ export default {
       this.index = index;
       this.$emit("menuIndex", index);
     },
-    login() {
-      this.axios
-        .post("/login", { user: this.username, password: this.password })
-        .then((res) => {
-          console.log(res);
-          this.user = this.username;
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+    setUser(title) {
+      this.title = title;
     },
   },
 };

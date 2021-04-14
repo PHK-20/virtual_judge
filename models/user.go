@@ -14,6 +14,7 @@ import (
 type User_info struct {
 	Username     string    `orm:"column(username);pk"`
 	Password     string    `orm:"column(password)"`
+	Nickname     string    `orm:"column(nickname)"`
 	RegisterTime time.Time `orm:"column(register_time)"`
 }
 
@@ -36,22 +37,24 @@ func (item *User_info) Register() error {
 	return nil
 }
 
-func Check(username, password string) (*User_info, error) {
+func (item *User_info) GetUser(username string) (*User_info, error) {
 	o := orm.NewOrm()
-	item := User_info{
-		Username: username,
-	}
-	err := o.Read(&item)
+	item.Username = username
+	err := o.Read(item)
 	if err == orm.ErrNoRows || err == orm.ErrMissPK {
-		return nil, errors.New("username or password wrong")
-	} else {
-		fmt.Println(md5V(password))
-		fmt.Println(item.Password)
-		if md5V(password) != item.Password {
-			return nil, errors.New("username or password wrong")
-		}
-		return &item, nil
+		return nil, errors.New("user is not existed")
 	}
+	return item, nil
+}
+func (item *User_info) Check(username, password string) (*User_info, error) {
+	item, err := item.GetUser(username)
+	if err != nil {
+		return nil, err
+	}
+	if md5V(password) != item.Password {
+		return nil, errors.New("username or password wrong")
+	}
+	return item, nil
 }
 
 func md5V(str string) string {

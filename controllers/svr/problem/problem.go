@@ -22,7 +22,7 @@ type respProblem struct {
 	ErrorMsg string
 	Data     DataProblem
 }
-
+	
 type DataProblem struct {
 	ProblemInfo *oj.ProblemInfo
 	Language    []string

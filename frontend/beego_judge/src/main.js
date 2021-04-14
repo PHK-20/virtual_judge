@@ -10,6 +10,7 @@ import axios from 'axios'
 Vue.config.productionTip = false
 axios.defaults.baseURL = "http://localhost:9000/"
 axios.defaults.timeout = 30000;
+axios.defaults.withCredentials = true
 Vue.prototype.$axios = axios
 Vue.use(ElementUI)
 /* eslint-disable no-new */

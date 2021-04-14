@@ -17,7 +17,6 @@ type SubmitController struct {
 
 type reqSubmit struct {
 	Problem  problemInfo `json:"problem"`
-	Username string      `json:"username"`
 	Usercode string      `json:"usercode"`
 }
 
@@ -61,14 +60,16 @@ func (c *SubmitController) Post() {
 		resp.ErrorMsg = "Wrong request parmas"
 		return
 	}
-	if req.Username == "" {
-		resp.ErrorMsg = "Username is empty"
+	username := c.GetSession("username")
+	if username == nil {
+		resp.ErrorMsg = "Login Firstly"
 		return
 	}
 	if len(req.Usercode) < 50 {
 		resp.ErrorMsg = "Submit code at least 50 characters"
 		return
 	}
+
 	_, err = ojmanager.GetOj(&req.Problem.Oj)
 	if err != nil {
 		resp.ErrorMsg = err.Error()
@@ -77,7 +78,7 @@ func (c *SubmitController) Post() {
 	runid := int(atomic.AddInt32(max_run_id, 1))
 	item := models.Submit_status{
 		RunId:       runid,
-		UserName:    req.Username,
+		UserName:    username.(string),
 		Oj:          req.Problem.Oj,
 		ProblemId:   req.Problem.Id,
 		Result:      "submiting",

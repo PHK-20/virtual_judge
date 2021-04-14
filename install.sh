@@ -20,22 +20,23 @@ raw_sql="
         length INT NOT NULL,
         submit_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (runid)
-    );
+    )character set = utf8;
 "
 mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
 
 
-raw_sql="DROP TABLE user_info";
+# raw_sql="DROP TABLE user_info";
 
-mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
+# mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
 
 raw_sql="
     CREATE TABLE  IF NOT EXISTS user_info (
         username VARCHAR(20) NOT NULL,
         password VARCHAR(32) NOT NULL,
+        nickname VARCHAR(20) NOT NULL,
         register_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (username)
-    );
+    )character set utf8;
 "
 mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
 

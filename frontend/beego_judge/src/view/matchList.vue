@@ -1,0 +1,218 @@
+<template>
+  <div class="matchList" style="margin-left: 10px">
+    <el-dialog title="Create Match" :visible.sync="visible" width="40%">
+      <el-form ref="form" :model="form" label-width="90px" :rules="rules">
+        <el-form-item label="Title" prop="title">
+          <el-input v-model="form.title"></el-input>
+        </el-form-item>
+        <el-form-item label="Description">
+          <el-input v-model="form.desc"></el-input>
+        </el-form-item>
+        <el-form-item label="比赛时间" prop="dataTime">
+          <el-date-picker
+            v-model="form.contestTime"
+            type="datetimerange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="Add">
+          <el-col :span="4">
+            <el-button type="primary" @click="addProblem">Problem</el-button>
+          </el-col>
+        </el-form-item>
+        <el-form-item
+          v-for="(problem, index) in form.problem"
+          :label="'问题' + index"
+          :key="index"
+          required
+        >
+          <el-row :gutter="2">
+            <el-col :span="6">
+              <el-form-item>
+                <el-select v-model="problem.oj">
+                  <el-option
+                    v-for="item in oj"
+                    :key="item.value"
+                    :value="item.value"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item>
+                <el-input v-model="problem.pid" placeholder="problemId">
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-button type="danger" @click="removeProblem(problem)"
+                >删除</el-button
+              >
+            </el-col>
+          </el-row>
+        </el-form-item>
+        <el-form-item>
+          <el-row>
+            <el-col :span="4">
+              <el-button type="primary" @click="submitForm('form')"
+                >Confirm</el-button
+              >
+            </el-col>
+          </el-row>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+    <el-row>
+      <el-col :span="2" style="margin-bottom: 10px">
+        <el-button type="primary" @click="createContest"
+          >Create Contest</el-button
+        >
+      </el-col>
+    </el-row>
+    <el-table :data="tableData" stripe style="width: 100%" v-loading="loading">
+      <el-table-column align="center" label="MatchId" prop="MatchId">
+      </el-table-column>
+      <el-table-column align="center" prop="Title">
+        <template slot="header">
+          <div>Title</div>
+          <el-input v-model="title" @change="query()" size="mini" />
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="Begin Time" prop="BeginTime">
+      </el-table-column>
+      <el-table-column align="center" label="Length" prop="Length">
+      </el-table-column>
+      <el-table-column align="center" label="Owner" prop="Owner">
+      </el-table-column>
+    </el-table>
+    <el-pagination
+      style="margin-top: 20px"
+      background
+      layout="sizes, prev, pager, next"
+      :total="total"
+      :current-page="currentPage"
+      :page-sizes="[10, 20, 50, 100]"
+      :page-size="pageSize"
+      @current-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+    </el-pagination>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    name: String,
+  },
+  data() {
+    return {
+      visible: false,
+      title: "",
+      loading: false,
+      pageSize: 10,
+      currentPage: 1,
+      total: 0,
+      tableData: [
+        {
+          MatchId: "",
+          Title: "",
+          BeginTime: "",
+          Length: "",
+          Owner: "",
+        },
+      ],
+      oj: [
+        {
+          value: "HDU",
+        },
+      ],
+      form: {
+        problem: [
+          {
+            oj: "HDU",
+            pid: "",
+          },
+        ],
+        desc: "",
+        title: "",
+        contestTime: "",
+        endTime: "",
+      },
+      rules: {
+        title: [{ required: true, trigger: "blur" }],
+      },
+    };
+  },
+  methods: {
+    createContest() {
+      if (!this.name) {
+        this.$notify.error({
+          title: "Error",
+          message: "Login First",
+        });
+      } else {
+        this.visible = true;
+      }
+    },
+    removeProblem(item) {
+      var index = this.form.problem.indexOf(item);
+      if (index !== -1) {
+        this.form.problem.splice(index, 1);
+      }
+    },
+    addProblem() {
+      this.form.problem.push({ oj: "HDU", pid: "" });
+    },
+    handleCurrentChange(page) {
+      this.currentPage = page;
+      //this.query();
+    },
+    handleSizeChange(size) {
+      this.pageSize = size;
+      //   this.query();
+    },
+    checkProblem(array) {
+      array.forEach((item) => {
+        console.log(item);
+        this.$axios
+          .get("/problem", {
+            params: {
+              problemid: item.pid,
+              oj: item.oj,
+            },
+          })
+          .then((res) => {
+            console.log(res);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          if (!this.form.contestTime) {
+            this.$notify.error({
+              title: "Error",
+              message: "contest time is empty",
+            });
+            return;
+          }
+          this.checkProblem(this.form.problem);
+        } else {
+          return false;
+        }
+      });
+    },
+  },
+};
+</script>
+
+<style>
+</style>

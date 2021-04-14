@@ -2,7 +2,7 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"time"
 
 	"beego_judge/models"
@@ -14,7 +14,7 @@ type LoginController struct {
 	beego.Controller
 }
 type reqLogin struct {
-	UserName string
+	Username string
 	Password string
 }
 
@@ -25,37 +25,49 @@ type respLogin struct {
 }
 
 type DataLogin struct {
-	Status       bool
+	Username     string
+	Nickname     string
 	RegisterTime time.Time
 }
 
 func (c *LoginController) Post() {
-	resp := respLogin{Status: "fail", Data: DataLogin{Status: false}}
+	resp := respLogin{Status: "fail"}
 	defer func() {
 		c.Data["json"] = &resp
 		c.ServeJSON()
 	}()
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}()
-	req := reqLogin{}
-	err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)
-	if err != nil {
-		resp.ErrorMsg = "Wrong request parmas"
-		return
+	username := c.GetSession("username")
+	if username == nil {
+		req := reqLogin{}
+		err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)
+		if err != nil {
+			resp.ErrorMsg = "Wrong request parmas"
+			return
+		}
+		user := &models.User_info{}
+		user, err = user.Check(req.Username, req.Password)
+		if err != nil {
+			resp.ErrorMsg = err.Error()
+			return
+		}
+		c.SetSession("username", user.Username)
+		c.SetSession("nickname", user.Nickname)
+		c.SetSession("register_time", user.RegisterTime)
 	}
-	item, err := models.Check(req.UserName, req.Password)
-	if err != nil {
-		resp.ErrorMsg = err.Error()
-		return
-	}
-	resp.Data.RegisterTime = item.RegisterTime
-	resp.Data.Status = true
-	resp.Status = "success"
+	SetRespData(&resp, c)
 }
 
+func SetRespData(resp *respLogin, c *LoginController) {
+	resp.Data.Nickname = c.GetSession("nickname").(string)
+	resp.Data.Username = c.GetSession("username").(string)
+	resp.Data.RegisterTime = c.GetSession("register_time").(time.Time)
+	resp.Status = "success"
+}
 func (c *LoginController) Options() {
 	c.Data["json"] = map[string]interface{}{"status": 200, "message": "ok", "moreinfo": ""}
 	c.ServeJSON()

@@ -13,8 +13,9 @@ type RegisterController struct {
 	beego.Controller
 }
 type reqRegister struct {
-	UserName string
+	Username string
 	Password string
+	Nickname string
 }
 
 type respRegister struct {
@@ -45,8 +46,9 @@ func (c *RegisterController) Post() {
 		return
 	}
 	item := models.User_info{
-		Username: req.UserName,
+		Username: req.Username,
 		Password: req.Password,
+		Nickname: req.Nickname,
 	}
 	err = item.Register()
 	if err != nil {

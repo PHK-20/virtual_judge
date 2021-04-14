@@ -17,7 +17,8 @@ func init() {
 		c.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "http://localhost:7000")
 		c.ResponseWriter.Header().Set("Access-Control-Allow-Methods", "POST")
 		c.ResponseWriter.Header().Set("Access-Control-Max-Age", "1728000")
-		c.ResponseWriter.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept,Accept-Encoding") //header的类型
+		c.ResponseWriter.Header().Set("Access-Control-Allow-Headers", "Content-Type,Accept,Accept-Encoding")
+		c.ResponseWriter.Header().Set("Access-Control-Allow-Credentials", "true") //header的类型
 	}
 	//跨域请求
 	beego.InsertFilter("/submit", beego.BeforeRouter, allow_access)
@@ -25,6 +26,7 @@ func init() {
 	beego.InsertFilter("/result", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/status", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/login", beego.BeforeRouter, allow_access)
+	beego.InsertFilter("/logout", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/register", beego.BeforeRouter, allow_access)
 
 	beego.Router("/", &controllers.MainController{})
@@ -34,4 +36,5 @@ func init() {
 	beego.Router("/status", &status.QueryController{})
 	beego.Router("/login", &user.LoginController{})
 	beego.Router("/register", &user.RegisterController{})
+	beego.Router("/logout", &user.LogoutController{})
 }
