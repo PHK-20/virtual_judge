@@ -14,7 +14,7 @@ func init() {
 	db_host := beego.AppConfig.String("mysql_host")
 	db_name := beego.AppConfig.String("mysql_dbname")
 
-	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", db_user, db_pw, db_host, db_name))
+	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true&loc=Local", db_user, db_pw, db_host, db_name))
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
@@ -22,12 +22,13 @@ func init() {
 	}
 	orm.Debug = false
 }
-func GetMaxRunId() (*int32, error) {
-	var runid int32
+
+func GetMaxId(table_name, col string) (*int32, error) {
+	var id int32
 	db := orm.NewOrm()
-	err := db.Raw("select max(runid) from submit_status").QueryRow(&runid)
+	err := db.Raw(fmt.Sprintf("select max(%s) from %s", col, table_name)).QueryRow(&id)
 	if err != nil {
 		return nil, err
 	}
-	return &runid, nil
+	return &id, nil
 }

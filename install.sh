@@ -40,3 +40,18 @@ raw_sql="
 "
 mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
 
+raw_sql="
+    CREATE TABLE  IF NOT EXISTS contest (
+        matchid INT NOT NULL,
+        title VARCHAR(32) NOT NULL,
+        onwer VARCHAR(20) NOT NULL,
+        descr VARCHAR(128) NOT NULL,
+        problem VARCHAR(128) NOT NULL,
+        begin_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        end_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (matchid)
+    )character set utf8;
+"
+mysql -h${host} -P${port} -u${user} -p${password} -D ${dbname} -e "${raw_sql}"
+

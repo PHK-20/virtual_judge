@@ -4,7 +4,7 @@
       <el-table-column align="center" label="RunId" prop="RunId">
       </el-table-column>
       <el-table-column align="center" prop="UserName">
-        <template slot="header">
+        <template slot="header" slot-scope="scope">
           <div>Username</div>
           <el-input
             v-model="condition.username"
@@ -14,7 +14,7 @@
         </template>
       </el-table-column>
       <el-table-column align="center" label="OJ" prop="Oj">
-        <template slot="header">
+        <template slot="header" slot-scope="scope">
           <div>OJ</div>
           <el-select v-model="condition.oj" @change="query()" size="mini">
             <el-option v-for="item in ojArray" :key="item" :value="item">
@@ -23,7 +23,7 @@
         </template>
       </el-table-column>
       <el-table-column align="center" prop="ProblemId">
-        <template slot="header">
+        <template slot="header" slot-scope="scope">
           <div>ProblemId</div>
           <el-input
             v-model="condition.problemid"
@@ -41,7 +41,7 @@
         </template>
       </el-table-column>
       <el-table-column align="center" prop="Result">
-        <template slot="header">
+        <template slot="header" slot-scope="scope">
           <div>Result</div>
           <el-select v-model="condition.result" @change="query()" size="mini">
             <el-option v-for="item in resultArray" :key="item" :value="item">
@@ -132,6 +132,7 @@ export default {
             this.tableData = [];
             let result = resp.data.Data;
             result.Submitions.forEach((item) => {
+              item.SubmitTime = new Date(item.SubmitTime).toLocaleString();
               this.tableData.push(item);
             });
             this.total = result.Total;

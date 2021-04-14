@@ -70,6 +70,9 @@ export default {
       if (idx == "status") {
         this.$refs.status.query();
       }
+      if (idx == "match") {
+        this.$refs.match.query();
+      }
     },
     toProblem(oj, pid) {
       this.index = "problem";

@@ -1,10 +1,9 @@
-package status
+package match
 
 import (
-	"beego_judge/controllers/remote/oj"
 	"beego_judge/models"
 	"encoding/json"
-	"fmt"
+	"log"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
@@ -13,6 +12,7 @@ import (
 type QueryController struct {
 	beego.Controller
 }
+
 type reqQuery struct {
 	Offset    int
 	PageSize  int
@@ -26,30 +26,28 @@ type respQuery struct {
 }
 
 type DataQuery struct {
-	Submitions []models.Submit_status
-	Total      int64
+	MatchItem []models.Contest
+	Total     int64
 }
 
 type condition struct {
-	Username  string
-	ProblemId string
-	Oj        string
-	Result    string
+	Title   string
+	Onwer   string
+	MatchId string
 }
 
 func (c *QueryController) Get() {
-	resp := respQuery{
-		Status: "fail",
-	}
+	resp := respQuery{Status: "fail"}
 	defer func() {
 		c.Data["json"] = &resp
 		c.ServeJSON()
 	}()
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}()
+
 	var req reqQuery
 	var err error
 	req.Offset, err = c.GetInt("offset", 0)
@@ -66,23 +64,18 @@ func (c *QueryController) Get() {
 	con := condition{}
 	json.Unmarshal([]byte(req.condition), &con)
 	o := orm.NewOrm()
-	qs := o.QueryTable("submit_status")
-	qs = qs.OrderBy("-RunId")
-	if con.Username != "" {
-		qs = qs.Filter("UserName__icontains", con.Username)
+	qs := o.QueryTable("contest")
+	qs = qs.OrderBy("-MatchId")
+	if con.MatchId != "" {
+		qs = qs.Filter("MatchId", con.MatchId)
 	}
-	if con.Oj != "" && con.Oj != "ALL" {
-		qs = qs.Filter("Oj__icontains", con.Oj)
+	if con.Title != "" {
+		qs = qs.Filter("Title__icontains", con.Title)
 	}
-	if con.ProblemId != "" {
-		qs = qs.Filter("ProblemId__icontains", con.ProblemId)
+	if con.Onwer != "" {
+		qs = qs.Filter("Onwer__icontains", con.Onwer)
 	}
-	if con.Result != "" && con.Result != "ALL" {
-		base := oj.OjBase{}
-		code := base.GetResultCode(&con.Result)
-		qs = qs.Filter("ResultCode", code)
-	}
-	_, err = qs.Limit(req.PageSize, req.Offset).All(&resp.Data.Submitions)
+	_, err = qs.Limit(req.PageSize, req.Offset).All(&resp.Data.MatchItem)
 	if err != nil {
 		resp.ErrorMsg = err.Error()
 		panic(err)

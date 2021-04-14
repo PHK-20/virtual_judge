@@ -39,7 +39,11 @@ type DataSubmit struct {
 var max_run_id *int32
 
 func init() {
-	max_run_id, _ = models.GetMaxRunId()
+	var err error
+	max_run_id, err = models.GetMaxId("submit_status","runid")
+	if err != nil {
+		panic(err)
+	}
 	fmt.Printf("max_run_id: %v\n", *max_run_id)
 }
 

@@ -5,12 +5,14 @@
         <el-form-item label="Title" prop="title">
           <el-input v-model="form.title"></el-input>
         </el-form-item>
-        <el-form-item label="Description">
+        <el-form-item label="Description" prop="desc">
           <el-input v-model="form.desc"></el-input>
         </el-form-item>
         <el-form-item label="比赛时间" prop="dataTime">
           <el-date-picker
             v-model="form.contestTime"
+            format="yyyy-MM-dd HH:mm:ss"
+            value-format="yyyy-MM-dd HH:mm:ss"
             type="datetimerange"
             range-separator="至"
             start-placeholder="开始日期"
@@ -44,7 +46,11 @@
             </el-col>
             <el-col :span="6">
               <el-form-item>
-                <el-input v-model="problem.pid" placeholder="problemId">
+                <el-input
+                  @change="checkProblem(index)"
+                  v-model="problem.pid"
+                  placeholder="problemId"
+                >
                 </el-input>
               </el-form-item>
             </el-col>
@@ -58,7 +64,7 @@
         <el-form-item>
           <el-row>
             <el-col :span="4">
-              <el-button type="primary" @click="submitForm('form')"
+              <el-button :icon="icon" type="primary" @click="submitForm('form')"
                 >Confirm</el-button
               >
             </el-col>
@@ -77,16 +83,28 @@
       <el-table-column align="center" label="MatchId" prop="MatchId">
       </el-table-column>
       <el-table-column align="center" prop="Title">
-        <template slot="header">
+        <template slot="header" slot-scope="scope">
           <div>Title</div>
-          <el-input v-model="title" @change="query()" size="mini" />
+          <el-input v-model="condition.title" @change="query()" size="mini" />
+        </template>
+        <template slot-scope="scope">
+          <el-link
+            type="primary"
+            :underline="false"
+            @click="toMatch(scope.row.MatchId)"
+            >{{ scope.row.Title }}</el-link
+          >
         </template>
       </el-table-column>
       <el-table-column align="center" label="Begin Time" prop="BeginTime">
       </el-table-column>
-      <el-table-column align="center" label="Length" prop="Length">
+      <el-table-column align="center" label="EndTime" prop="EndTime">
       </el-table-column>
-      <el-table-column align="center" label="Owner" prop="Owner">
+      <el-table-column align="center" prop="Onwer">
+        <template slot="header" slot-scope="scope">
+          <div>Onwer</div>
+          <el-input v-model="condition.onwer" @change="query()" size="mini" />
+        </template>
       </el-table-column>
     </el-table>
     <el-pagination
@@ -111,21 +129,17 @@ export default {
   },
   data() {
     return {
+      icon: "el-icon-check",
       visible: false,
-      title: "",
       loading: false,
       pageSize: 10,
       currentPage: 1,
       total: 0,
-      tableData: [
-        {
-          MatchId: "",
-          Title: "",
-          BeginTime: "",
-          Length: "",
-          Owner: "",
-        },
-      ],
+      condition: {
+        title: "",
+        onwer: "",
+      },
+      tableData: [],
       oj: [
         {
           value: "HDU",
@@ -136,15 +150,16 @@ export default {
           {
             oj: "HDU",
             pid: "",
+            res: false,
           },
         ],
         desc: "",
         title: "",
         contestTime: "",
-        endTime: "",
       },
       rules: {
-        title: [{ required: true, trigger: "blur" }],
+        title: [{ required: true, trigger: "blur", max: 32 }],
+        desc: [{ trigger: "blur", max: 128 }],
       },
     };
   },
@@ -170,29 +185,71 @@ export default {
     },
     handleCurrentChange(page) {
       this.currentPage = page;
-      //this.query();
+      this.query();
     },
     handleSizeChange(size) {
       this.pageSize = size;
-      //   this.query();
+      this.query();
     },
-    checkProblem(array) {
-      array.forEach((item) => {
-        console.log(item);
-        this.$axios
-          .get("/problem", {
-            params: {
-              problemid: item.pid,
-              oj: item.oj,
-            },
-          })
-          .then((res) => {
-            console.log(res);
-          })
-          .catch((err) => {
-            console.error(err);
-          });
+    query() {
+      this.loading = true;
+      console.log("querMatch");
+      this.$axios
+        .get("/matchList", {
+          params: {
+            num: this.pageSize,
+            offset: (this.currentPage - 1) * 10,
+            condition: this.condition,
+          },
+        })
+        .then((resp) => {
+          if (resp.data.Status == "success") {
+            this.tableData = [];
+            let result = resp.data.Data;
+            result.MatchItem.forEach((item) => {
+              item.BeginTime = new Date(item.BeginTime).toLocaleString();
+              item.EndTime = new Date(item.EndTime).toLocaleString();
+              this.tableData.push(item);
+            });
+            this.total = result.Total;
+          }
+          this.loading = false;
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    },
+    toMatch(id) {
+      let routeUrl = this.$router.resolve({
+        path: "/match/" + id,
       });
+      window.open(routeUrl.href, "_blank");
+    },
+    checkProblem(idx) {
+      this.icon = "el-icon-loading";
+      this.$axios
+        .get("/problem", {
+          params: {
+            problemid: this.form.problem[idx].pid,
+            oj: this.form.problem[idx].oj,
+          },
+        })
+        .then((resp) => {
+          let data = resp.data;
+          console.log(resp);
+          if (data.Status == "fail") {
+            this.$notify.error({
+              title: "Error",
+              message: "问题" + idx + " 不存在",
+            });
+          } else {
+            this.form.problem[idx].res = true;
+          }
+          this.icon = "el-icon-check";
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
@@ -204,9 +261,41 @@ export default {
             });
             return;
           }
-          this.checkProblem(this.form.problem);
-        } else {
-          return false;
+          let flag = true;
+          console.log(this.form.problem);
+          this.form.problem.forEach((item, idx) => {
+            if (!item.res) {
+              this.$notify.error({
+                title: "Error",
+                message: "问题" + idx + " 不存在",
+              });
+              flag = false;
+            }
+          });
+          if (flag) {
+            console.log(this.form);
+            this.$axios
+              .post("/createContest", this.form)
+              .then((resp) => {
+                console.log(resp);
+                let data = resp.data;
+                if (data.Status == "success") {
+                  this.$notify.success({
+                    title: "Success",
+                    message: "Create Contest Success",
+                  });
+                  this.visible = false;
+                } else {
+                  this.$notify.error({
+                    title: "Error",
+                    message: data.ErrorMsg,
+                  });
+                }
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }
         }
       });
     },

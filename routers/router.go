@@ -3,6 +3,7 @@ package routers
 import (
 	"beego_judge/controllers"
 	"beego_judge/controllers/svr/judge"
+	"beego_judge/controllers/svr/match"
 	"beego_judge/controllers/svr/problem"
 	"beego_judge/controllers/svr/status"
 	"beego_judge/controllers/svr/user"
@@ -28,6 +29,8 @@ func init() {
 	beego.InsertFilter("/login", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/logout", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/register", beego.BeforeRouter, allow_access)
+	beego.InsertFilter("/createContest", beego.BeforeRouter, allow_access)
+	beego.InsertFilter("/matchList", beego.BeforeRouter, allow_access)
 
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/submit", &judge.SubmitController{})
@@ -37,4 +40,6 @@ func init() {
 	beego.Router("/login", &user.LoginController{})
 	beego.Router("/register", &user.RegisterController{})
 	beego.Router("/logout", &user.LogoutController{})
+	beego.Router("/createContest", &match.CreateController{})
+	beego.Router("/matchList", &match.QueryController{})
 }
