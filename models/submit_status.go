@@ -10,6 +10,7 @@ import (
 
 type Submit_status struct {
 	RunId       int       `orm:"column(runid);pk"`
+	MatchId     int       `orm:"column(matchid)"`
 	RemoteRunId int       `orm:"column(remote_runid)"`
 	UserName    string    `orm:"column(username)"`
 	Oj          string    `orm:"column(oj)"`

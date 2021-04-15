@@ -61,7 +61,6 @@ export default {
       this.index = idx;
     },
     menuIdx(idx) {
-      console.log(idx);
       if (idx == "login") {
         this.$refs.login.showLogin();
         return;
@@ -79,7 +78,6 @@ export default {
       this.$refs.problem.toProblem(oj, pid);
     },
     setUser(user) {
-      console.log(user);
       this.user = user;
       this.$refs.mainMenu.setUser(user.name);
       this.$refs.user.setUser(user);

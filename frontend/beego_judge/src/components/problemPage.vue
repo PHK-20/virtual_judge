@@ -1,25 +1,7 @@
 <template>
   <div class="problem">
+    <login ref="login"></login>
     <el-row>
-      <el-col :span="20"></el-col>
-      <el-row :gutter="3">
-        <el-col :span="4">
-          <el-input v-model="problem.id" placeholder="problemid"></el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-select
-            v-model="problem.oj"
-            placeholder="oj"
-            @change="needLanguage = true"
-          >
-            <el-option v-for="item in oj_array" :key="item" :value="item">
-            </el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="3">
-          <el-button type="primary" @click="queryProblem()">Query</el-button>
-        </el-col>
-      </el-row>
       <h1>{{ problem.title }}</h1>
       <div>
         Time Limit: {{ problem.timeLimit }}<br />
@@ -77,12 +59,12 @@
 </template>
  
 <script>
+import login from "@/components/login";
 export default {
-  props: {
-    username: String,
-    pid: String,
-    oj: String,
+  components: {
+    login,
   },
+  props: {},
   name: "problemTab",
   data() {
     return {
@@ -97,20 +79,29 @@ export default {
         output: "",
         sampleInput: "",
         sampleOutput: "",
-        timeLimit: "0MS",
-        memoryLimit: "0KB",
+        timeLimit: "",
+        memoryLimit: "",
         hint: "",
         src: "",
+        matchid: 0,
       },
       lang_array: [],
       usercode: "",
       needLanguage: true,
       notifications: {},
+      loading: {},
     };
   },
-  mounted: function () {
-    this.problem.id = this.pid;
-    this.problem.oj = this.oj;
+  created: function () {
+    this.loading = this.$loading({
+      text: "Loading",
+      spinner: "el-icon-loading",
+    });
+    this.problem.id = this.$route.params.pid;
+    this.problem.oj = this.$route.params.oj;
+    if (this.$route.params.matchid) {
+      this.problem.matchid = Number(this.$route.params.matchid);
+    }
     this.queryProblem();
   },
   methods: {
@@ -153,6 +144,7 @@ export default {
               this.problem.language = this.lang_array[0];
               this.needLanguage = false;
             }
+            this.loading.close();
             this.$emit("title", this.problem.oj + "-" + this.problem.id);
           } else {
             this.$notify.error({
@@ -184,6 +176,9 @@ export default {
         },
       }).then((resp) => {
         if (resp.data.Status == "fail") {
+          if (resp.data.ErrorMsg == "Login Firstly") {
+            this.$refs.login.showLogin();
+          }
           this.$notify.error({
             title: "Error",
             message: resp.data.ErrorMsg,

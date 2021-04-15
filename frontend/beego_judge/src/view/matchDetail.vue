@@ -20,19 +20,55 @@
     <div v-bind:style="{ color: statusColor, 'margin-top': '20px' }">
       {{ status }}
     </div>
+
+    <el-tabs
+      type="border-card"
+      v-model="activeTab"
+      @tab-click="handleClick"
+      style="margin-top: 20px"
+    >
+      <el-tab-pane label="Overview">
+        <el-table :data="problemSet" stripe style="width: 100%">
+          <el-table-column prop="status" label="" align="center">
+          </el-table-column>
+          <el-table-column prop="idx" label="#"> </el-table-column>
+          <el-table-column label="title" width="1400">
+            <template slot-scope="scope">
+              <el-link
+                type="primary"
+                :underline="false"
+                @click="toProblem(scope.row)"
+                >{{ scope.row.title }}</el-link
+              >
+            </template>
+          </el-table-column>
+          ></el-table
+        >
+      </el-tab-pane>
+      <el-tab-pane label="Status">
+        <status ref="status" :matchid="matchid"></status>
+      </el-tab-pane>
+      <el-tab-pane label="Ranking"></el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script>
+import status from "@/view/status";
 export default {
+  components: {
+    status,
+  },
   data() {
     return {
-      matchid: "",
+      matchid: 0,
       matchInfo: {},
       percentage: 0,
       showText: true,
       status: "",
       statusColor: "red",
+      activeTab: "",
+      problemSet: [],
     };
   },
   methods: {
@@ -41,6 +77,11 @@ export default {
         return "已结束";
       }
       return percentage + "%";
+    },
+    handleClick(tab, event) {
+      if (tab.label == "Status") {
+        this.$refs.status.query();
+      }
     },
     calPercentage() {
       let all = this.getSecond(
@@ -69,12 +110,18 @@ export default {
     getSecond(s, e) {
       return (e.getTime() - s.getTime()) / 1000;
     },
+    toProblem(row) {
+      let routeUrl = this.$router.resolve({
+        path: "/match/" + this.matchid + "/" + row.oj + "/" + row.pid,
+      });
+      window.open(routeUrl.href, "_blank");
+    },
   },
   beforeDestroy() {
     clearInterval(this.timer);
   },
   mounted: function () {
-    this.matchid = this.$route.params.id;
+    this.matchid = Number(this.$route.params.matchid);
     this.$axios
       .get("/matchList", {
         params: {
@@ -85,9 +132,27 @@ export default {
       })
       .then((resp) => {
         let data = resp.data;
-        console.log(resp);
         if (data.Data.Total == 1) {
           this.matchInfo = data.Data.MatchItem[0];
+          let problem_info = [];
+          data.Data.MatchItem[0].Problem.split(",").forEach((item) => {
+            let tmp = [];
+            tmp = item.split("-");
+            problem_info.push({
+              oj: tmp[0],
+              pid: tmp[1],
+            });
+          });
+          data.Data.MatchItem[0].ProblemTitle.split(",").forEach(
+            (item, idx) => {
+              this.problemSet.push({
+                idx: String.fromCharCode("A".charCodeAt() + idx),
+                title: item,
+                oj: problem_info[0].oj,
+                pid: problem_info[0].pid,
+              });
+            }
+          );
           this.calPercentage();
           this.timer = setInterval(() => {
             this.calPercentage();

@@ -8,6 +8,7 @@ dbname="beego_judge"
 raw_sql="
     CREATE TABLE IF NOT EXISTS submit_status (
         runid INT NOT NULL,
+        matchid INT,
         remote_runid INT NOT NULL,
         username VARCHAR(20) NOT NULL,
         oj VARCHAR(20) NOT NULL,
@@ -47,6 +48,7 @@ raw_sql="
         onwer VARCHAR(20) NOT NULL,
         descr VARCHAR(128) NOT NULL,
         problem VARCHAR(128) NOT NULL,
+        problem_title VARCHAR(128) NOT NULL,
         begin_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         end_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

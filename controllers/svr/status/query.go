@@ -5,6 +5,7 @@ import (
 	"beego_judge/models"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
@@ -16,7 +17,8 @@ type QueryController struct {
 type reqQuery struct {
 	Offset    int
 	PageSize  int
-	condition string
+	Condition string
+	Matchid   int
 }
 
 type respQuery struct {
@@ -31,6 +33,7 @@ type DataQuery struct {
 }
 
 type condition struct {
+	MatchId   int
 	Username  string
 	ProblemId string
 	Oj        string
@@ -62,12 +65,17 @@ func (c *QueryController) Get() {
 		resp.ErrorMsg = err.Error()
 		panic(err)
 	}
-	req.condition = c.GetString("condition", "")
-	con := condition{}
-	json.Unmarshal([]byte(req.condition), &con)
+	con := condition{MatchId: 0}
+	req.Condition = c.GetString("condition", "")
+	log.Println(req.Condition)
+	json.Unmarshal([]byte(req.Condition), &con)
 	o := orm.NewOrm()
 	qs := o.QueryTable("submit_status")
 	qs = qs.OrderBy("-RunId")
+	log.Println(con.MatchId)
+	if con.MatchId != 0 {
+		qs = qs.Filter("MatchId", con.MatchId)
+	}
 	if con.Username != "" {
 		qs = qs.Filter("UserName__icontains", con.Username)
 	}

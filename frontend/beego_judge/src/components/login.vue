@@ -20,6 +20,7 @@
               type="password"
               v-model="loginForm.password"
               placeholder="password"
+              @keyup.enter.native="login"
             ></el-input>
           </el-form-item>
         </div>

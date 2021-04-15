@@ -150,6 +150,7 @@ export default {
           {
             oj: "HDU",
             pid: "",
+            title: "",
             res: false,
           },
         ],
@@ -236,7 +237,6 @@ export default {
         })
         .then((resp) => {
           let data = resp.data;
-          console.log(resp);
           if (data.Status == "fail") {
             this.$notify.error({
               title: "Error",
@@ -244,6 +244,7 @@ export default {
             });
           } else {
             this.form.problem[idx].res = true;
+            this.form.problem[idx].title = data.Data.ProblemInfo.Title;
           }
           this.icon = "el-icon-check";
         })
@@ -262,7 +263,6 @@ export default {
             return;
           }
           let flag = true;
-          console.log(this.form.problem);
           this.form.problem.forEach((item, idx) => {
             if (!item.res) {
               this.$notify.error({
@@ -277,7 +277,6 @@ export default {
             this.$axios
               .post("/createContest", this.form)
               .then((resp) => {
-                console.log(resp);
                 let data = resp.data;
                 if (data.Status == "success") {
                   this.$notify.success({
@@ -285,6 +284,7 @@ export default {
                     message: "Create Contest Success",
                   });
                   this.visible = false;
+                  this.query();
                 } else {
                   this.$notify.error({
                     title: "Error",

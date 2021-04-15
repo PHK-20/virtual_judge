@@ -8,14 +8,15 @@ import (
 )
 
 type Contest struct {
-	MatchId    int       `orm:"column(matchid);pk"`
-	Title      string    `orm:"column(title)"`
-	Onwer      string    `orm:"column(onwer)"`
-	Desc       string    `orm:"column(descr)"`
-	Problem    string    `orm:"column(problem)"`
-	BeginTime  time.Time `orm:"column(begin_time)"`
-	EndTime    time.Time `orm:"column(end_time)"`
-	CreateTime time.Time `orm:"column(create_time)"`
+	MatchId      int       `orm:"column(matchid);pk"`
+	Title        string    `orm:"column(title)"`
+	Onwer        string    `orm:"column(onwer)"`
+	Desc         string    `orm:"column(descr)"`
+	Problem      string    `orm:"column(problem)"`
+	ProblemTitle string    `orm:"column(problem_title)"`
+	BeginTime    time.Time `orm:"column(begin_time)"`
+	EndTime      time.Time `orm:"column(end_time)"`
+	CreateTime   time.Time `orm:"column(create_time)"`
 }
 
 func init() {

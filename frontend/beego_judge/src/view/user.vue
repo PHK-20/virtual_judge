@@ -34,7 +34,6 @@ export default {
       this.$axios
         .get("/logout", {})
         .then((res) => {
-          console.log(res);
           this.$emit("logout");
           this.$emit("setIndex", "problem");
         })

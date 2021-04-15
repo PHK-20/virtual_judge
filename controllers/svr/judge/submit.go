@@ -6,6 +6,7 @@ import (
 	"beego_judge/models"
 	"encoding/json"
 	"fmt"
+	"log"
 	"sync/atomic"
 
 	"github.com/astaxie/beego"
@@ -21,9 +22,10 @@ type reqSubmit struct {
 }
 
 type problemInfo struct {
-	Id       string
-	Oj       string
-	Language string
+	Id       string `json:"id"`
+	Oj       string `json:"oj"`
+	Language string `json:"language"`
+	MatchId  int    `json:"matchid"`
 }
 
 type respSubmit struct {
@@ -40,7 +42,7 @@ var max_run_id *int32
 
 func init() {
 	var err error
-	max_run_id, err = models.GetMaxId("submit_status","runid")
+	max_run_id, err = models.GetMaxId("submit_status", "runid")
 	if err != nil {
 		panic(err)
 	}
@@ -58,9 +60,14 @@ func (c *SubmitController) Post() {
 			fmt.Println(err)
 		}
 	}()
-	req := reqSubmit{}
+	req := reqSubmit{
+		Problem: problemInfo{
+			MatchId: 0,
+		},
+	}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)
 	if err != nil {
+		log.Println(string(c.Ctx.Input.RequestBody))
 		resp.ErrorMsg = "Wrong request parmas"
 		return
 	}
@@ -82,6 +89,7 @@ func (c *SubmitController) Post() {
 	runid := int(atomic.AddInt32(max_run_id, 1))
 	item := models.Submit_status{
 		RunId:       runid,
+		MatchId:     req.Problem.MatchId,
 		UserName:    username.(string),
 		Oj:          req.Problem.Oj,
 		ProblemId:   req.Problem.Id,

@@ -35,7 +35,7 @@
           <el-link
             type="primary"
             :underline="false"
-            @click="toProblem(scope.row.Oj, scope.row.ProblemId)"
+            @click="toProblem(scope.row)"
             >{{ scope.row.ProblemId }}</el-link
           >
         </template>
@@ -82,6 +82,9 @@
 
 <script>
 export default {
+  props: {
+    matchid: Number,
+  },
   data() {
     return {
       loading: false,
@@ -93,6 +96,7 @@ export default {
         problemid: "",
         oj: "ALL",
         result: "ALL",
+        matchid: 0,
       },
       ojArray: ["ALL", "HDU"],
       resultArray: [
@@ -112,9 +116,29 @@ export default {
       tableData: [],
     };
   },
+  mounted: function () {
+    console.log(this.$route.params);
+    this.condition.matchid = Number(this.$route.params.matchid);
+  },
   methods: {
-    toProblem: function (oj, pid) {
-      this.$emit("toProblem", oj, pid);
+    toProblem(row) {
+      let routeUrl = {};
+      if (!this.condition.matchid) {
+        routeUrl = this.$router.resolve({
+          path: "/problem/" + row.Oj + "/" + row.ProblemId,
+        });
+      } else {
+        routeUrl = this.$router.resolve({
+          path:
+            "/match/" +
+            this.condition.matchid +
+            "/" +
+            row.Oj +
+            "/" +
+            row.ProblemId,
+        });
+      }
+      window.open(routeUrl.href, "_blank");
     },
     query: function () {
       this.loading = true;

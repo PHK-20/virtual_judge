@@ -33,7 +33,7 @@ type DataQuery struct {
 type condition struct {
 	Title   string
 	Onwer   string
-	MatchId string
+	MatchId int
 }
 
 func (c *QueryController) Get() {
@@ -66,7 +66,7 @@ func (c *QueryController) Get() {
 	o := orm.NewOrm()
 	qs := o.QueryTable("contest")
 	qs = qs.OrderBy("-MatchId")
-	if con.MatchId != "" {
+	if con.MatchId != 0 {
 		qs = qs.Filter("MatchId", con.MatchId)
 	}
 	if con.Title != "" {

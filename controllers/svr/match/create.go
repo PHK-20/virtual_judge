@@ -33,8 +33,9 @@ type DataCreate struct {
 }
 
 type Problem struct {
-	Pid string `json:"pid"`
-	Oj  string `json:"oj"`
+	Pid   string `json:"pid"`
+	Oj    string `json:"oj"`
+	Title string `json:"title"`
 }
 
 var max_match_id *int32
@@ -68,7 +69,7 @@ func (c *CreateController) Post() {
 	username = "string"
 	req := reqCreate{}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)
-
+	log.Println(req)
 	if err != nil {
 		resp.ErrorMsg = "Wrong request parmas"
 		return
@@ -77,20 +78,27 @@ func (c *CreateController) Post() {
 
 	go func() {
 		var problem_str string
+		var problem_title string
 		for i := 0; i < len(req.ProblemSet); i++ {
-			problem_str += req.ProblemSet[i].Oj + "-" + req.ProblemSet[i].Pid + ","
+			problem_str += req.ProblemSet[i].Oj + "-" + req.ProblemSet[i].Pid
+			problem_title += req.ProblemSet[i].Title
+			if i != len(req.ProblemSet)-1 {
+				problem_str += ","
+				problem_title += ","
+			}
 		}
 		local, _ := time.LoadLocation("Local")
 		bt, _ := time.ParseInLocation("2006-01-02 15:04:05", req.ContestTime[0], local)
 		et, _ := time.ParseInLocation("2006-01-02 15:04:05", req.ContestTime[1], local)
 		item := &models.Contest{
-			MatchId:   matchid,
-			Title:     req.Title,
-			Onwer:     username.(string),
-			Desc:      req.Desc,
-			Problem:   problem_str,
-			BeginTime: bt,
-			EndTime:   et,
+			MatchId:      matchid,
+			Title:        req.Title,
+			Onwer:        username.(string),
+			Desc:         req.Desc,
+			Problem:      problem_str,
+			ProblemTitle: problem_title,
+			BeginTime:    bt,
+			EndTime:      et,
 		}
 		err := item.Create()
 		if err != nil {
