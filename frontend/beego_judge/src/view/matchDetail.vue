@@ -111,8 +111,18 @@ export default {
       return (e.getTime() - s.getTime()) / 1000;
     },
     toProblem(row) {
+      let info = {
+        idx: row.idx,
+        pid: row.pid,
+        oj: row.oj,
+      };
+
       let routeUrl = this.$router.resolve({
-        path: "/match/" + this.matchid + "/" + row.oj + "/" + row.pid,
+        name: "matchProblem",
+        params: {
+          matchid: this.matchid,
+          info: JSON.stringify(info),
+        },
       });
       window.open(routeUrl.href, "_blank");
     },

@@ -26,6 +26,7 @@ type problemInfo struct {
 	Oj       string `json:"oj"`
 	Language string `json:"language"`
 	MatchId  int    `json:"matchid"`
+	Matchidx string `json:"matchidx"`
 }
 
 type respSubmit struct {
@@ -62,7 +63,8 @@ func (c *SubmitController) Post() {
 	}()
 	req := reqSubmit{
 		Problem: problemInfo{
-			MatchId: 0,
+			MatchId:  0,
+			Matchidx: "#",
 		},
 	}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)
@@ -90,6 +92,7 @@ func (c *SubmitController) Post() {
 	item := models.Submit_status{
 		RunId:       runid,
 		MatchId:     req.Problem.MatchId,
+		MatchIdx:    req.Problem.Matchidx,
 		UserName:    username.(string),
 		Oj:          req.Problem.Oj,
 		ProblemId:   req.Problem.Id,

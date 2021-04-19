@@ -64,7 +64,10 @@ export default {
   components: {
     login,
   },
-  props: {},
+  props: {
+    oj: String,
+    pid: String,
+  },
   name: "problemTab",
   data() {
     return {
@@ -84,6 +87,7 @@ export default {
         hint: "",
         src: "",
         matchid: 0,
+        matchidx: "#",
       },
       lang_array: [],
       usercode: "",
@@ -97,10 +101,17 @@ export default {
       text: "Loading",
       spinner: "el-icon-loading",
     });
-    this.problem.id = this.$route.params.pid;
-    this.problem.oj = this.$route.params.oj;
+    console.log(this.$route);
     if (this.$route.params.matchid) {
       this.problem.matchid = Number(this.$route.params.matchid);
+      let info = JSON.parse(this.$route.params.info);
+      console.log(info);
+      this.problem.id = info.pid;
+      this.problem.oj = info.oj;
+      this.problem.matchidx = info.idx;
+    } else {
+      this.problem.id = this.$route.params.pid;
+      this.problem.oj = this.$route.params.oj;
     }
     this.queryProblem();
   },

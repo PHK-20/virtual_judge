@@ -62,10 +62,10 @@ func (c *CreateController) Post() {
 		}
 	}()
 	username := c.GetSession("username")
-	// if username == nil {
-	// 	resp.ErrorMsg="Login First"
-	// 	return
-	// }
+	if username == nil {
+		resp.ErrorMsg="Login First"
+		return
+	}
 	username = "string"
 	req := reqCreate{}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &req)

@@ -11,6 +11,7 @@ import (
 type Submit_status struct {
 	RunId       int       `orm:"column(runid);pk"`
 	MatchId     int       `orm:"column(matchid)"`
+	MatchIdx    string    `orm:"column(matchidx)"`
 	RemoteRunId int       `orm:"column(remote_runid)"`
 	UserName    string    `orm:"column(username)"`
 	Oj          string    `orm:"column(oj)"`
@@ -79,4 +80,15 @@ func (item *Submit_status) QueryResult(runid *int) (*bool, *oj.ResultInfo, error
 		MemCost:  item.Memory,
 	}
 	return &is_final_res, &result, nil
+}
+
+func (item *Submit_status) QueryMatchSubmit(matchid int) ([]Submit_status, *int64, error) {
+	var record []Submit_status
+	o := orm.NewOrm()
+	qs := o.QueryTable(item.itemName())
+	total, err := qs.Filter("matchid", matchid).OrderBy("submit_time").All(&record, "username", "matchidx", "result", "submit_time")
+	if err != nil {
+		return nil, nil, err
+	}
+	return record, &total, nil
 }

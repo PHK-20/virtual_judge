@@ -19,7 +19,7 @@ export default new Router({
       component: matchDetail
     },
     {
-      path: "/match/:matchid/:oj/:pid",
+      path: "/match/:matchid/:info",
       name: 'matchProblem',
       component: problemPage,
     },

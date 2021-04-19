@@ -9,6 +9,7 @@ raw_sql="
     CREATE TABLE IF NOT EXISTS submit_status (
         runid INT NOT NULL,
         matchid INT,
+        matchidx VARCHAR(8),
         remote_runid INT NOT NULL,
         username VARCHAR(20) NOT NULL,
         oj VARCHAR(20) NOT NULL,

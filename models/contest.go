@@ -36,3 +36,13 @@ func (item *Contest) Create() error {
 	}
 	return nil
 }
+
+func (item *Contest) QueryContest(matchid int) (*Contest, error) {
+	o := orm.NewOrm()
+	item.MatchId = matchid
+	err := o.Read(item)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}

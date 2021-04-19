@@ -31,6 +31,7 @@ func init() {
 	beego.InsertFilter("/register", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/createContest", beego.BeforeRouter, allow_access)
 	beego.InsertFilter("/matchList", beego.BeforeRouter, allow_access)
+	beego.InsertFilter("/rank", beego.BeforeRouter, allow_access)
 
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/submit", &judge.SubmitController{})
@@ -42,4 +43,5 @@ func init() {
 	beego.Router("/logout", &user.LogoutController{})
 	beego.Router("/createContest", &match.CreateController{})
 	beego.Router("/matchList", &match.QueryController{})
+	beego.Router("/rank", &match.RankController{})
 }
