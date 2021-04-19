@@ -31,7 +31,7 @@
 
 <script>
 import mainMenu from "@/components/mainMenu";
-import status from "@/view/status";
+import status from "@/components/status";
 import problem from "@/view/problem";
 import user from "@/view/user";
 import matchList from "@/view/matchList";

@@ -28,10 +28,12 @@ type DataRank struct {
 }
 
 type PersonRank struct {
-	Name      string
-	Problem   map[string]*ProblemStaut
-	TotalCost float64
-	ACnum     int
+	Rank     int
+	Name     string
+	Nickname string
+	Problem  map[string]*ProblemStaut
+	Penalty  float64
+	ACnum    int
 }
 
 type ProblemStaut struct {
@@ -70,18 +72,24 @@ func (c *RankController) Get() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println(records)
 	for _, v := range records {
-		log.Println(v)
 		name := v.UserName
 		idx := v.MatchIdx
 		code := v.ResultCode
 		res := v.Result
 		p, ok := name2rank[name]
 		if !ok {
+			item := &models.User_info{}
+			item, err = item.GetUser(name)
+			if err != nil {
+				panic(err)
+			}
 			name2rank[name] = &PersonRank{
-				Name:    name,
-				ACnum:   0,
-				Problem: make(map[string]*ProblemStaut),
+				Name:     name,
+				Nickname: item.Nickname,
+				ACnum:    0,
+				Problem:  make(map[string]*ProblemStaut),
 			}
 			p = name2rank[name]
 		}
@@ -96,8 +104,8 @@ func (c *RankController) Get() {
 		if code == oj.AC {
 			ps.Status = "AC"
 			ps.ACTime = v.SubmitTime.String()
-			p.TotalCost += v.SubmitTime.Sub(contest.BeginTime).Seconds()
-			p.TotalCost += float64(ps.TryTimes) * 20 * 60
+			p.Penalty += v.SubmitTime.Sub(contest.BeginTime).Seconds() / 60
+			p.Penalty += float64(ps.TryTimes) * 20
 			p.ACnum++
 		} else {
 			ps.Status = res
@@ -108,8 +116,10 @@ func (c *RankController) Get() {
 	for _, v := range name2rank {
 		finalRes = append(finalRes, *v)
 	}
-	log.Println(finalRes)
 	sort.Sort(finalRes)
+	for i := 0; i < len(finalRes); i++ {
+		finalRes[i].Rank = i + 1
+	}
 	resp.Data.Rank = finalRes
 	resp.Status = "success"
 }
@@ -128,5 +138,5 @@ func (s RankSlice) Less(i, j int) bool {
 	if s[i].ACnum != s[j].ACnum {
 		return s[i].ACnum > s[j].ACnum
 	}
-	return s[i].TotalCost < s[j].TotalCost
+	return s[i].Penalty < s[j].Penalty
 }

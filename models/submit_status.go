@@ -86,7 +86,7 @@ func (item *Submit_status) QueryMatchSubmit(matchid int) ([]Submit_status, *int6
 	var record []Submit_status
 	o := orm.NewOrm()
 	qs := o.QueryTable(item.itemName())
-	total, err := qs.Filter("matchid", matchid).OrderBy("submit_time").All(&record, "username", "matchidx", "result", "submit_time")
+	total, err := qs.Filter("matchid", matchid).OrderBy("submit_time").All(&record, "username", "matchidx", "result","result_code", "submit_time")
 	if err != nil {
 		return nil, nil, err
 	}

@@ -20,44 +20,56 @@
     <div v-bind:style="{ color: statusColor, 'margin-top': '20px' }">
       {{ status }}
     </div>
-
-    <el-tabs
-      type="border-card"
-      v-model="activeTab"
-      @tab-click="handleClick"
-      style="margin-top: 20px"
-    >
-      <el-tab-pane label="Overview">
-        <el-table :data="problemSet" stripe style="width: 100%">
-          <el-table-column prop="status" label="" align="center">
-          </el-table-column>
-          <el-table-column prop="idx" label="#"> </el-table-column>
-          <el-table-column label="title" width="1400">
-            <template slot-scope="scope">
-              <el-link
-                type="primary"
-                :underline="false"
-                @click="toProblem(scope.row)"
-                >{{ scope.row.title }}</el-link
-              >
-            </template>
-          </el-table-column>
-          ></el-table
+    <el-row>
+      <el-col :span="22" :offset="1">
+        <el-tabs
+          type="border-card"
+          v-model="activeTab"
+          @tab-click="handleClick"
+          style="margin-top: 20px"
         >
-      </el-tab-pane>
-      <el-tab-pane label="Status">
-        <status ref="status" :matchid="matchid"></status>
-      </el-tab-pane>
-      <el-tab-pane label="Ranking"></el-tab-pane>
-    </el-tabs>
+          <el-tab-pane label="Overview">
+            <el-table :data="problemSet" stripe style="width: 100%">
+              <el-table-column prop="status" label="" align="center">
+              </el-table-column>
+              <el-table-column prop="idx" label="#"> </el-table-column>
+              <el-table-column label="title" width="1400">
+                <template slot-scope="scope">
+                  <el-link
+                    type="primary"
+                    :underline="false"
+                    @click="toProblem(scope.row)"
+                    >{{ scope.row.title }}</el-link
+                  >
+                </template>
+              </el-table-column>
+              ></el-table
+            >
+          </el-tab-pane>
+          <el-tab-pane label="Status">
+            <status ref="status" :matchid="matchid"></status>
+          </el-tab-pane>
+          <el-tab-pane label="Rank">
+            <rank
+              ref="rank"
+              :matchid="matchid"
+              :problemSet="problemSet"
+              :matchInfo="matchInfo"
+            ></rank>
+          </el-tab-pane>
+        </el-tabs>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script>
-import status from "@/view/status";
+import status from "@/components/status";
+import rank from "@/components/rank";
 export default {
   components: {
     status,
+    rank,
   },
   data() {
     return {
@@ -81,6 +93,9 @@ export default {
     handleClick(tab, event) {
       if (tab.label == "Status") {
         this.$refs.status.query();
+      }
+      if (tab.label == "Rank") {
+        this.$refs.rank.query();
       }
     },
     calPercentage() {

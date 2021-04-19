@@ -1,60 +1,61 @@
 <template>
   <div class="problem">
     <login ref="login"></login>
-    <el-row>
-      <h1>{{ problem.title }}</h1>
-      <div>
-        Time Limit: {{ problem.timeLimit }}<br />
-        Memory Limit: {{ problem.memoryLimit }}
-      </div>
-      <div class="desc">Description</div>
-      <el-card class="box-card">
-        <p class="content">{{ problem.description }}</p>
-      </el-card>
-      <div class="desc">Input</div>
-      <el-card class="box-card">
-        <p class="content">{{ problem.input }}</p>
-      </el-card>
-      <div class="desc">Output</div>
-      <el-card class="box-card">
-        <p class="content">{{ problem.output }}</p>
-      </el-card>
-      <div class="desc">Sample Input</div>
-      <el-card class="box-card">
-        <p class="content">{{ problem.sampleInput }}</p>
-      </el-card>
-      <div class="desc">Sample Output</div>
-      <el-card class="box-card">
-        <p class="content">{{ problem.sampleOutput }}</p>
-      </el-card>
-      <div class="desc" v-if="problem.hint">Hint</div>
-      <el-card class="box-card" v-if="problem.hint">
-        <p class="content">{{ problem.hint }}</p>
-      </el-card>
-      <div class="desc" v-if="problem.src">Source</div>
-      <el-card class="box-card" v-if="problem.src">
-        <p class="content">{{ problem.src }}</p>
-      </el-card>
-      <el-row :gutter="3" style="margin-top: 30px">
-        <el-col :span="4">
-          <el-select v-model="problem.language" placeholder="language">
-            <el-option v-for="item in lang_array" :key="item" :value="item">
-            </el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="3">
-          <el-button type="primary" @click="submit">Submit</el-button>
-        </el-col>
-      </el-row>
-      <el-input
-        type="textarea"
-        :autosize="{ minRows: 20 }"
-        placeholder="code"
-        v-model="usercode"
-        style="margin-top: 20px"
-      >
-      </el-input>
-    </el-row>
+
+      <el-col :span="22" :offset="1">
+        <h1>{{ problem.title }}</h1>
+        <div>
+          Time Limit: {{ problem.timeLimit }}<br />
+          Memory Limit: {{ problem.memoryLimit }}
+        </div>
+        <div class="desc">Description</div>
+        <el-card class="box-card">
+          <p class="content">{{ problem.description }}</p>
+        </el-card>
+        <div class="desc">Input</div>
+        <el-card class="box-card">
+          <p class="content">{{ problem.input }}</p>
+        </el-card>
+        <div class="desc">Output</div>
+        <el-card class="box-card">
+          <p class="content">{{ problem.output }}</p>
+        </el-card>
+        <div class="desc">Sample Input</div>
+        <el-card class="box-card">
+          <p class="content">{{ problem.sampleInput }}</p>
+        </el-card>
+        <div class="desc">Sample Output</div>
+        <el-card class="box-card">
+          <p class="content">{{ problem.sampleOutput }}</p>
+        </el-card>
+        <div class="desc" v-if="problem.hint">Hint</div>
+        <el-card class="box-card" v-if="problem.hint">
+          <p class="content">{{ problem.hint }}</p>
+        </el-card>
+        <div class="desc" v-if="problem.src">Source</div>
+        <el-card class="box-card" v-if="problem.src">
+          <p class="content">{{ problem.src }}</p>
+        </el-card>
+        <el-row :gutter="9" style="margin-top: 30px">
+          <el-col :span="4">
+            <el-select v-model="problem.language" placeholder="language">
+              <el-option v-for="item in lang_array" :key="item" :value="item">
+              </el-option>
+            </el-select>
+          </el-col>
+          <el-col :span="3">
+            <el-button type="primary" @click="submit">Submit</el-button>
+          </el-col>
+        </el-row>
+        <el-input
+          type="textarea"
+          :autosize="{ minRows: 20 }"
+          placeholder="code"
+          v-model="usercode"
+          style="margin-top: 20px"
+        >
+        </el-input>
+      </el-col>
   </div>
 </template>
  

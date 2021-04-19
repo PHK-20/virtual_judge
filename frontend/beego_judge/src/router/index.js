@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import main from '@/view/main'
 import matchDetail from '@/view/matchDetail'
 import problemPage from '@/components/problemPage.vue'
+import rank from '@/components/rank.vue'
 Vue.use(Router)
 
 export default new Router({
